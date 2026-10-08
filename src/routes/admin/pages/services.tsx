@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Save,
@@ -179,16 +179,32 @@ function AutoTextarea({
   value,
   onChange,
   rows = 2,
+  className = "",
   ...props
 }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { rows?: number }) {
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.max(textareaRef.current.scrollHeight, (rows || 2) * 24 + 16)}px`;
+    }
+  }, [value, rows]);
+
   return (
     <textarea
+      ref={textareaRef}
       {...props}
       value={value}
+      onChange={(e) => {
+        if (textareaRef.current) {
+          textareaRef.current.style.height = "auto";
+          textareaRef.current.style.height = `${Math.max(textareaRef.current.scrollHeight, (rows || 2) * 24 + 16)}px`;
+        }
+        onChange?.(e);
+      }}
       rows={rows}
-      onChange={onChange}
-      className="w-full resize-none bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white/90 text-sm placeholder-white/20 outline-none focus:border-blue-500/50 focus:bg-white/8 transition-all duration-200 leading-relaxed"
-      style={{ minHeight: rows * 28 }}
+      className={`w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 placeholder-white/20 outline-none transition-all duration-200 focus:border-blue-500/50 focus:bg-white/8 overflow-hidden leading-relaxed ${className}`}
     />
   );
 }
