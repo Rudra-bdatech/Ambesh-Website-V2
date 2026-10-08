@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as ClientsRouteImport } from './routes/clients'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -24,6 +25,18 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TrainingRouteImport } from './routes/training'
 import { Route as WorkRouteImport } from './routes/work'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminPagesAboutRouteImport } from './routes/admin/pages/about'
+import { Route as AdminPagesBookRouteImport } from './routes/admin/pages/book'
+import { Route as AdminPagesContactRouteImport } from './routes/admin/pages/contact'
+import { Route as AdminPagesHomeRouteImport } from './routes/admin/pages/home'
+import { Route as AdminPagesInsightsRouteImport } from './routes/admin/pages/insights'
+import { Route as AdminPagesPodcastRouteImport } from './routes/admin/pages/podcast'
+import { Route as AdminPagesPrivacyRouteImport } from './routes/admin/pages/privacy'
+import { Route as AdminPagesServicesRouteImport } from './routes/admin/pages/services'
+import { Route as AdminPagesTermsRouteImport } from './routes/admin/pages/terms'
+import { Route as AdminPagesTrainingRouteImport } from './routes/admin/pages/training'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -33,6 +46,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookRoute = BookRouteImport.update({
@@ -100,9 +118,70 @@ const WorkRoute = WorkRouteImport.update({
   path: '/work',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPagesAboutRoute = AdminPagesAboutRouteImport.update({
+  id: '/pages/about',
+  path: '/pages/about',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPagesBookRoute = AdminPagesBookRouteImport.update({
+  id: '/pages/book',
+  path: '/pages/book',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPagesContactRoute = AdminPagesContactRouteImport.update({
+  id: '/pages/contact',
+  path: '/pages/contact',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPagesHomeRoute = AdminPagesHomeRouteImport.update({
+  id: '/pages/home',
+  path: '/pages/home',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPagesInsightsRoute = AdminPagesInsightsRouteImport.update({
+  id: '/pages/insights',
+  path: '/pages/insights',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPagesPodcastRoute = AdminPagesPodcastRouteImport.update({
+  id: '/pages/podcast',
+  path: '/pages/podcast',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPagesPrivacyRoute = AdminPagesPrivacyRouteImport.update({
+  id: '/pages/privacy',
+  path: '/pages/privacy',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPagesServicesRoute = AdminPagesServicesRouteImport.update({
+  id: '/pages/services',
+  path: '/pages/services',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPagesTermsRoute = AdminPagesTermsRouteImport.update({
+  id: '/pages/terms',
+  path: '/pages/terms',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPagesTrainingRoute = AdminPagesTrainingRouteImport.update({
+  id: '/pages/training',
+  path: '/pages/training',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/book': typeof BookRoute
   '/clients': typeof ClientsRoute
@@ -117,6 +196,18 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
   '/work': typeof WorkRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/pages/about': typeof AdminPagesAboutRoute
+  '/admin/pages/book': typeof AdminPagesBookRoute
+  '/admin/pages/contact': typeof AdminPagesContactRoute
+  '/admin/pages/home': typeof AdminPagesHomeRoute
+  '/admin/pages/insights': typeof AdminPagesInsightsRoute
+  '/admin/pages/podcast': typeof AdminPagesPodcastRoute
+  '/admin/pages/privacy': typeof AdminPagesPrivacyRoute
+  '/admin/pages/services': typeof AdminPagesServicesRoute
+  '/admin/pages/terms': typeof AdminPagesTermsRoute
+  '/admin/pages/training': typeof AdminPagesTrainingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -134,10 +225,23 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
   '/work': typeof WorkRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin': typeof AdminIndexRoute
+  '/admin/pages/about': typeof AdminPagesAboutRoute
+  '/admin/pages/book': typeof AdminPagesBookRoute
+  '/admin/pages/contact': typeof AdminPagesContactRoute
+  '/admin/pages/home': typeof AdminPagesHomeRoute
+  '/admin/pages/insights': typeof AdminPagesInsightsRoute
+  '/admin/pages/podcast': typeof AdminPagesPodcastRoute
+  '/admin/pages/privacy': typeof AdminPagesPrivacyRoute
+  '/admin/pages/services': typeof AdminPagesServicesRoute
+  '/admin/pages/terms': typeof AdminPagesTermsRoute
+  '/admin/pages/training': typeof AdminPagesTrainingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/book': typeof BookRoute
   '/clients': typeof ClientsRoute
@@ -152,11 +256,24 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/training': typeof TrainingRoute
   '/work': typeof WorkRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/pages/about': typeof AdminPagesAboutRoute
+  '/admin/pages/book': typeof AdminPagesBookRoute
+  '/admin/pages/contact': typeof AdminPagesContactRoute
+  '/admin/pages/home': typeof AdminPagesHomeRoute
+  '/admin/pages/insights': typeof AdminPagesInsightsRoute
+  '/admin/pages/podcast': typeof AdminPagesPodcastRoute
+  '/admin/pages/privacy': typeof AdminPagesPrivacyRoute
+  '/admin/pages/services': typeof AdminPagesServicesRoute
+  '/admin/pages/terms': typeof AdminPagesTermsRoute
+  '/admin/pages/training': typeof AdminPagesTrainingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/about'
     | '/book'
     | '/clients'
@@ -171,6 +288,18 @@ export interface FileRouteTypes {
     | '/terms'
     | '/training'
     | '/work'
+    | '/admin/login'
+    | '/admin/'
+    | '/admin/pages/about'
+    | '/admin/pages/book'
+    | '/admin/pages/contact'
+    | '/admin/pages/home'
+    | '/admin/pages/insights'
+    | '/admin/pages/podcast'
+    | '/admin/pages/privacy'
+    | '/admin/pages/services'
+    | '/admin/pages/terms'
+    | '/admin/pages/training'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -188,9 +317,22 @@ export interface FileRouteTypes {
     | '/terms'
     | '/training'
     | '/work'
+    | '/admin/login'
+    | '/admin'
+    | '/admin/pages/about'
+    | '/admin/pages/book'
+    | '/admin/pages/contact'
+    | '/admin/pages/home'
+    | '/admin/pages/insights'
+    | '/admin/pages/podcast'
+    | '/admin/pages/privacy'
+    | '/admin/pages/services'
+    | '/admin/pages/terms'
+    | '/admin/pages/training'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/about'
     | '/book'
     | '/clients'
@@ -205,10 +347,23 @@ export interface FileRouteTypes {
     | '/terms'
     | '/training'
     | '/work'
+    | '/admin/login'
+    | '/admin/'
+    | '/admin/pages/about'
+    | '/admin/pages/book'
+    | '/admin/pages/contact'
+    | '/admin/pages/home'
+    | '/admin/pages/insights'
+    | '/admin/pages/podcast'
+    | '/admin/pages/privacy'
+    | '/admin/pages/services'
+    | '/admin/pages/terms'
+    | '/admin/pages/training'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   BookRoute: typeof BookRoute
   ClientsRoute: typeof ClientsRoute
@@ -239,6 +394,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/book': {
@@ -332,11 +494,130 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/pages/about': {
+      id: '/admin/pages/about'
+      path: '/pages/about'
+      fullPath: '/admin/pages/about'
+      preLoaderRoute: typeof AdminPagesAboutRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/pages/book': {
+      id: '/admin/pages/book'
+      path: '/pages/book'
+      fullPath: '/admin/pages/book'
+      preLoaderRoute: typeof AdminPagesBookRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/pages/contact': {
+      id: '/admin/pages/contact'
+      path: '/pages/contact'
+      fullPath: '/admin/pages/contact'
+      preLoaderRoute: typeof AdminPagesContactRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/pages/home': {
+      id: '/admin/pages/home'
+      path: '/pages/home'
+      fullPath: '/admin/pages/home'
+      preLoaderRoute: typeof AdminPagesHomeRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/pages/insights': {
+      id: '/admin/pages/insights'
+      path: '/pages/insights'
+      fullPath: '/admin/pages/insights'
+      preLoaderRoute: typeof AdminPagesInsightsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/pages/podcast': {
+      id: '/admin/pages/podcast'
+      path: '/pages/podcast'
+      fullPath: '/admin/pages/podcast'
+      preLoaderRoute: typeof AdminPagesPodcastRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/pages/privacy': {
+      id: '/admin/pages/privacy'
+      path: '/pages/privacy'
+      fullPath: '/admin/pages/privacy'
+      preLoaderRoute: typeof AdminPagesPrivacyRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/pages/services': {
+      id: '/admin/pages/services'
+      path: '/pages/services'
+      fullPath: '/admin/pages/services'
+      preLoaderRoute: typeof AdminPagesServicesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/pages/terms': {
+      id: '/admin/pages/terms'
+      path: '/pages/terms'
+      fullPath: '/admin/pages/terms'
+      preLoaderRoute: typeof AdminPagesTermsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/pages/training': {
+      id: '/admin/pages/training'
+      path: '/pages/training'
+      fullPath: '/admin/pages/training'
+      preLoaderRoute: typeof AdminPagesTrainingRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
   }
 }
 
+interface AdminRouteRouteChildren {
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminPagesAboutRoute: typeof AdminPagesAboutRoute
+  AdminPagesBookRoute: typeof AdminPagesBookRoute
+  AdminPagesContactRoute: typeof AdminPagesContactRoute
+  AdminPagesHomeRoute: typeof AdminPagesHomeRoute
+  AdminPagesInsightsRoute: typeof AdminPagesInsightsRoute
+  AdminPagesPodcastRoute: typeof AdminPagesPodcastRoute
+  AdminPagesPrivacyRoute: typeof AdminPagesPrivacyRoute
+  AdminPagesServicesRoute: typeof AdminPagesServicesRoute
+  AdminPagesTermsRoute: typeof AdminPagesTermsRoute
+  AdminPagesTrainingRoute: typeof AdminPagesTrainingRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminLoginRoute: AdminLoginRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AdminPagesAboutRoute: AdminPagesAboutRoute,
+  AdminPagesBookRoute: AdminPagesBookRoute,
+  AdminPagesContactRoute: AdminPagesContactRoute,
+  AdminPagesHomeRoute: AdminPagesHomeRoute,
+  AdminPagesInsightsRoute: AdminPagesInsightsRoute,
+  AdminPagesPodcastRoute: AdminPagesPodcastRoute,
+  AdminPagesPrivacyRoute: AdminPagesPrivacyRoute,
+  AdminPagesServicesRoute: AdminPagesServicesRoute,
+  AdminPagesTermsRoute: AdminPagesTermsRoute,
+  AdminPagesTrainingRoute: AdminPagesTrainingRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   BookRoute: BookRoute,
   ClientsRoute: ClientsRoute,

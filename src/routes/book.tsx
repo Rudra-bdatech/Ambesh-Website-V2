@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
-import type { FormEvent } from "react";
+import { useMemo, type FormEvent } from "react";
 import { ArrowRight, BookOpen, Mail, Award, ShoppingBag, Users, List, User } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { Marquee } from "@/components/Marquee";
@@ -8,6 +7,9 @@ import { Book3D } from "@/components/Book3D";
 import { buildMeta, jsonLd, breadcrumbSchema, SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/seo";
 import { submitLeadToGHL } from "@/lib/ghl";
 import { GridVignetteBackground } from "@/components/ui/vignette-grid-background";
+import { usePageContent } from "@/hooks/use-page-content";
+import { EXACT_DEFAULT_BOOK_CONTENT } from "./admin/pages/book";
+import { RichHeading } from "@/components/RichHeading";
 
 export const Route = createFileRoute("/book")({
   head: () => {
@@ -62,66 +64,6 @@ export const Route = createFileRoute("/book")({
   component: BookPage,
 });
 
-const audiences = [
-  {
-    t: "Business owners and founders",
-    b: "Who know AI matters but do not know where to start. A framework for thinking about AI as a business decision, not a technology decision.",
-    c: "from-violet to-pink",
-  },
-  {
-    t: "Team leads and managers",
-    b: "Who need to help their teams adopt AI without disrupting what already works. Practical chapters on implementation, not theory.",
-    c: "from-pink to-amber",
-  },
-  {
-    t: "Professionals building their career",
-    b: "Who want to be the person on their team who actually understands AI - not the one who is still thinking about it.",
-    c: "from-amber to-cyan",
-  },
-];
-
-const takeaways = [
-  "How AI is transforming industries and what it means for your business",
-  "How to navigate the AI tool landscape and pick what actually matters",
-  "How to use AI to personalise customer experiences",
-  "Common adoption challenges and how to work through them",
-  "Where AI is heading and what to watch",
-  "Real-world applications from automation to customer insights",
-  "How to build an AI strategy that aligns with your business goals",
-  "Using AI for better data-driven decisions",
-  "Ethical considerations that actually matter in practice",
-  "How to build a scalable, AI-powered business model",
-];
-
-const featuredEndorsement = {
-  name: "William Koehler, Ph.D.",
-  role: "Dean, Sloane School of Business & Communication, Regis College, Massachusetts, USA",
-  q: "In his timely new book, Accelerate with AI, growth consultant and entrepreneur Ambesh Tiwari has provided something the business world sorely needs: a strategically focused, practical, and accessible guide to the myriad ways in which firms of all sizes can harness artificial intelligence to be more efficient and effective.",
-};
-
-const endorsements = [
-  {
-    name: "Madhu C Dutta-Koehler, PhD, MIT",
-    role: "Founder and President, The Greener Health Corp.",
-    q: "If businesses want to leverage AI to get ahead, Ambesh Tiwari's insights and takeaways are certainly a fundamental stepping stone in this field.",
-  },
-  {
-    name: "Aditya Lohia",
-    role: "Executive Director, Lohia Industries (P) Ltd.",
-    q: "Ambesh has done an excellent job in making everyone aware of the fact that AI is not for the corporate houses only but of every businessperson.",
-  },
-  {
-    name: "Shyam Sunder",
-    role: "AI Researcher, CSIR-CEERI, Pilani",
-    q: "The academic world often dwells on theory, but Ambesh's book is a refreshing pivot to action. It translates high-level concepts into actionable strategies that can be implemented from day one.",
-  },
-  {
-    name: "Prabhat Sinha",
-    role: "IT Expert, Entrepreneur & Best-selling Author",
-    q: "In the book Accelerate with AI, Ambesh has tried to accumulate some highly effective AI tools, tips and tricks at one place for business owners.",
-  },
-];
-
 const pressLogos = [
   { name: "Forbes India", src: "/logos/forbes-india.svg", className: "h-5 sm:h-8" },
   { name: "Mid-day", src: "/logos/mid-day.png", className: "h-5 sm:h-8" },
@@ -133,26 +75,102 @@ const pressLogos = [
 ];
 
 function BookPage() {
-  const submitChapterLeadFn = useServerFn(submitLeadToGHL);
+  const content = usePageContent("book", EXACT_DEFAULT_BOOK_CONTENT);
+
+  const hero = content.hero || EXACT_DEFAULT_BOOK_CONTENT.hero;
+  const press = content.press || EXACT_DEFAULT_BOOK_CONTENT.press;
+  const audiencesSec = content.audiences || EXACT_DEFAULT_BOOK_CONTENT.audiences;
+  const takeawaysSec = content.takeaways || EXACT_DEFAULT_BOOK_CONTENT.takeaways;
+  const endorsementsSec = content.endorsements || EXACT_DEFAULT_BOOK_CONTENT.endorsements;
+  const authorSec = content.author || EXACT_DEFAULT_BOOK_CONTENT.author;
+  const chapterCta = content.chapter_cta || EXACT_DEFAULT_BOOK_CONTENT.chapter_cta;
+
+  const audienceList = useMemo(
+    () => [
+      {
+        t: audiencesSec.aud1_title || "Business owners and founders",
+        b: audiencesSec.aud1_desc || "Who know AI matters but do not know where to start...",
+        c: "from-violet to-pink",
+      },
+      {
+        t: audiencesSec.aud2_title || "Team leads and managers",
+        b: audiencesSec.aud2_desc || "Who need to help their teams adopt AI without disrupting...",
+        c: "from-pink to-amber",
+      },
+      {
+        t: audiencesSec.aud3_title || "Professionals building their career",
+        b: audiencesSec.aud3_desc || "Who want to be the person on their team who actually understands AI...",
+        c: "from-amber to-cyan",
+      },
+    ],
+    [audiencesSec],
+  );
+
+  const takeawayList = useMemo(() => {
+    return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      .map((num) => takeawaysSec[`item_${num}` as keyof typeof takeawaysSec])
+      .filter(Boolean) as string[];
+  }, [takeawaysSec]);
+
+  const featuredEndorsement = useMemo(
+    () => ({
+      name: endorsementsSec.featured_name || "William Koehler, Ph.D.",
+      role:
+        endorsementsSec.featured_role ||
+        "Dean, Sloane School of Business & Communication, Regis College, Massachusetts, USA",
+      q: endorsementsSec.featured_quote || "",
+      initials: endorsementsSec.featured_initials || "WK",
+    }),
+    [endorsementsSec],
+  );
+
+  const endorsementList = useMemo(
+    () => [
+      {
+        name: endorsementsSec.end1_name || "Madhu C Dutta-Koehler, PhD, MIT",
+        role: endorsementsSec.end1_role || "Founder and President, The Greener Health Corp.",
+        q: endorsementsSec.end1_quote || "",
+      },
+      {
+        name: endorsementsSec.end2_name || "Aditya Lohia",
+        role: endorsementsSec.end2_role || "Executive Director, Lohia Industries (P) Ltd.",
+        q: endorsementsSec.end2_quote || "",
+      },
+      {
+        name: endorsementsSec.end3_name || "Shyam Sunder",
+        role: endorsementsSec.end3_role || "AI Researcher, CSIR-CEERI, Pilani",
+        q: endorsementsSec.end3_quote || "",
+      },
+      {
+        name: endorsementsSec.end4_name || "Prabhat Sinha",
+        role: endorsementsSec.end4_role || "IT Expert, Entrepreneur & Best-selling Author",
+        q: endorsementsSec.end4_quote || "",
+      },
+    ],
+    [endorsementsSec],
+  );
 
   async function onChapterSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const email = (new FormData(e.currentTarget).get("email") as string) || "";
 
     try {
-      await submitChapterLeadFn({
-        data: {
-          name: email.split("@")[0] || "Book reader",
-          email,
-          serviceLabel: "Book - Chapter 1 request",
-          pageUrl: window.location.href,
-        },
-      });
+      if (typeof submitLeadToGHL === "function") {
+        await submitLeadToGHL({
+          data: {
+            name: email.split("@")[0] || "Book reader",
+            email,
+            serviceLabel: "Book - Chapter 1 request",
+            pageUrl: typeof window !== "undefined" ? window.location.href : "",
+          },
+        });
+      }
     } catch (error) {
-      console.error("GHL sync failed:", error);
+      console.warn("GHL sync notice:", error);
     }
 
-    window.location.href = `mailto:hello@ambesh.com?subject=Send%20me%20Chapter%201&body=Please%20send%20Chapter%201%20to%20${encodeURIComponent(email)}`;
+    const recipient = chapterCta.recipient_email || "hello@ambesh.com";
+    window.location.href = `mailto:${recipient}?subject=Send%20me%20Chapter%201&body=Please%20send%20Chapter%201%20to%20${encodeURIComponent(email)}`;
   }
 
   return (
@@ -173,23 +191,29 @@ function BookPage() {
           <div className="md:col-span-7">
             <Reveal>
               <p className="eyebrow flex items-center gap-2">
-                <BookOpen className="h-3.5 w-3.5" /> The book
+                <BookOpen className="h-3.5 w-3.5" /> {hero.eyebrow}
               </p>
             </Reveal>
             <Reveal delay={100}>
               <h1 className="mt-6 font-display text-[2.4rem] font-extrabold leading-[0.95] tracking-[-0.03em] text-ink sm:text-5xl md:text-6xl lg:text-[4rem]">
-                Accelerate <span className="text-gradient-brand">With AI.</span>
+                <RichHeading
+                  text={hero.heading}
+                  defaultContent={
+                    <>
+                      Accelerate <span className="text-gradient-brand">With AI.</span>
+                    </>
+                  }
+                />
               </h1>
             </Reveal>
             <Reveal delay={200}>
               <p className="mt-6 font-serif text-2xl italic leading-snug text-ink-soft md:text-3xl">
-                A simple book for a complicated world.
+                {hero.subheading_italic}
               </p>
             </Reveal>
             <Reveal delay={300}>
               <p className="mt-8 max-w-xl text-lg leading-relaxed text-ink-soft md:text-xl">
-                A must-read for those who not only want to understand AI but also apply it to scale
-                their business.
+                {hero.description}
               </p>
             </Reveal>
             <Reveal delay={400} className="mt-8 flex flex-wrap items-center gap-2.5 sm:gap-3">
@@ -197,30 +221,30 @@ function BookPage() {
                 className="inline-flex shrink-0 items-center gap-2 rounded-full border border-rule px-3.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-wider sm:px-4 sm:text-xs"
                 style={{ color: "var(--accent)" }}
               >
-                <Award className="h-3.5 w-3.5" /> Amazon Bestseller
+                <Award className="h-3.5 w-3.5" /> {hero.badge_text}
               </span>
               <span className="text-xs text-ink-muted sm:text-sm">
-                Kindle + Physical · English · 2023
+                {hero.badge_meta}
               </span>
             </Reveal>
             <Reveal delay={500} className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
               <a
-                href="https://www.amazon.in/dp/B0CLKZK6JS?ref_=cm_sw_r_cp_ud_dp_YJBSASGYYGPGJ42PBTK2&asin=B0CLKZK6JS&revisionId=7bc12fe7&format=3&depth=1"
+                href={hero.kindle_btn_url}
                 target="_blank"
                 rel="noreferrer"
                 className="btn-premium inline-flex h-12 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-semibold sm:h-14 sm:px-8 sm:text-base"
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Read on Kindle <ArrowRight className="h-4 w-4" />
+                  {hero.kindle_btn_text} <ArrowRight className="h-4 w-4" />
                 </span>
               </a>
               <a
-                href="https://www.amazon.in/dp/B0CLKZK6JS?ref_=cm_sw_r_cp_ud_dp_YJBSASGYYGPGJ42PBTK2"
+                href={hero.physical_btn_url}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex h-12 shrink-0 items-center gap-2 rounded-full border border-ink/15 bg-canvas px-4 text-sm font-semibold text-ink transition-all hover:-translate-y-0.5 hover:border-ink/40 sm:h-14 sm:px-8 sm:text-base"
               >
-                <ShoppingBag className="h-4 w-4" /> Get a Physical Copy
+                <ShoppingBag className="h-4 w-4" /> {hero.physical_btn_text}
               </a>
             </Reveal>
           </div>
@@ -237,7 +261,7 @@ function BookPage() {
         <div className="container-edit">
           <Reveal eager>
             <p className="text-center text-xs uppercase tracking-widest text-ink-muted">
-              Featured In
+              {press.heading}
             </p>
           </Reveal>
           <div className="mt-4">
@@ -274,15 +298,22 @@ function BookPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <Users className="h-3.5 w-3.5" /> Who it is for
+              <Users className="h-3.5 w-3.5" /> {audiencesSec.eyebrow}
             </p>
             <h2 className="mt-4 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tighter md:text-6xl">
-              Written for people who{" "}
-              <span className="text-gradient-brand animate-gradient">do real work.</span>
+              <RichHeading
+                text={audiencesSec.heading}
+                defaultContent={
+                  <>
+                    Written for people who{" "}
+                    <span className="text-gradient-brand animate-gradient">do real work.</span>
+                  </>
+                }
+              />
             </h2>
           </Reveal>
           <div className="mt-16 grid gap-6 md:grid-cols-3">
-            {audiences.map((x, i) => (
+            {audienceList.map((x) => (
               <Reveal key={x.t} delay={100}>
                 <div className="custom-theme-card group h-full rounded-3xl p-8">
                   <div className={`h-1 w-12 rounded-full bg-gradient-to-r ${x.c}`} />
@@ -300,17 +331,24 @@ function BookPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <List className="h-3.5 w-3.5" /> Inside the book
+              <List className="h-3.5 w-3.5" /> {takeawaysSec.eyebrow}
             </p>
             <h2 className="mt-4 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tighter md:text-6xl">
-              10 things this book will{" "}
-              <span className="text-gradient-brand animate-gradient">teach you.</span>
+              <RichHeading
+                text={takeawaysSec.heading}
+                defaultContent={
+                  <>
+                    10 things this book will{" "}
+                    <span className="text-gradient-brand animate-gradient">teach you.</span>
+                  </>
+                }
+              />
             </h2>
-            <p className="mt-4 max-w-2xl text-lg text-ink-muted">10 clear takeaways.</p>
+            <p className="mt-4 max-w-2xl text-lg text-ink-muted">{takeawaysSec.subheading}</p>
           </Reveal>
           <div className="mt-12 grid gap-3 md:grid-cols-2">
-            {takeaways.map((t, i) => (
-              <Reveal key={t} delay={60}>
+            {takeawayList.map((t, i) => (
+              <Reveal key={t + i} delay={60}>
                 <div className="custom-theme-card group flex items-start gap-5 rounded-2xl p-5">
                   <span className="font-mono text-sm text-ink-muted">
                     {String(i + 1).padStart(2, "0")}
@@ -340,11 +378,18 @@ function BookPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <Award className="h-3.5 w-3.5" /> What experts say
+              <Award className="h-3.5 w-3.5" /> {endorsementsSec.eyebrow}
             </p>
             <h2 className="mt-4 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tighter md:text-6xl">
-              The people who{" "}
-              <span className="text-gradient-brand animate-gradient">read it first.</span>
+              <RichHeading
+                text={endorsementsSec.heading}
+                defaultContent={
+                  <>
+                    The people who{" "}
+                    <span className="text-gradient-brand animate-gradient">read it first.</span>
+                  </>
+                }
+              />
             </h2>
           </Reveal>
 
@@ -353,14 +398,14 @@ function BookPage() {
             <div className="relative overflow-hidden rounded-3xl border border-rule bg-canvas p-10 shadow-lift md:p-14">
               <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-gradient-brand opacity-20 blur-3xl" />
               <p className="font-mono text-[0.65rem] uppercase tracking-[0.25em] text-ink-muted">
-                Featured endorsement
+                {endorsementsSec.featured_label || "Featured endorsement"}
               </p>
               <p className="mt-6 font-serif text-2xl italic leading-snug text-ink md:text-3xl">
                 "{featuredEndorsement.q}"
               </p>
               <div className="mt-8 flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-brand font-mono text-sm font-bold text-white">
-                  WK
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-brand font-mono text-sm font-bold text-white shrink-0">
+                  {featuredEndorsement.initials}
                 </div>
                 <div>
                   <p className="text-lg font-bold tracking-tight">{featuredEndorsement.name}</p>
@@ -372,7 +417,7 @@ function BookPage() {
 
           {/* Other endorsements */}
           <div className="mt-6 grid gap-6 md:grid-cols-2">
-            {endorsements.map((e, i) => (
+            {endorsementList.map((e) => (
               <Reveal key={e.name} delay={80}>
                 <div className="custom-theme-card h-full rounded-3xl p-8">
                   <p className="font-serif text-lg italic leading-snug text-ink">"{e.q}"</p>
@@ -393,25 +438,32 @@ function BookPage() {
           <div className="grid gap-12 md:grid-cols-12 md:gap-20">
             <Reveal className="md:col-span-4">
               <p className="eyebrow flex items-center gap-2">
-                <User className="h-3.5 w-3.5" /> About the author
+                <User className="h-3.5 w-3.5" /> {authorSec.eyebrow}
               </p>
             </Reveal>
             <Reveal delay={150} className="md:col-span-8">
-              <p className="text-2xl font-medium leading-relaxed tracking-tight text-ink md:text-3xl">
-                Ambesh Tiwari is the founder of BDA Technologies, host of the{" "}
-                <em className="font-serif italic">Inspire with Ambesh</em> podcast, and an AI
-                trainer who has worked with{" "}
-                <span className="text-gradient-brand animate-gradient">5,000+ professionals</span>{" "}
-                across 50+ organisations in India, UAE and Africa. He blends an engineering
-                background with an MBA in International Marketing, a decade of business building,
-                and a practical, no-hype approach to AI that comes from using it in his own work
-                every day.
-              </p>
+              <div className="text-2xl font-medium leading-relaxed tracking-tight text-ink md:text-3xl">
+                <RichHeading
+                  text={authorSec.bio_text}
+                  defaultContent={
+                    <>
+                      Ambesh Tiwari is the founder of BDA Technologies, host of the{" "}
+                      <em className="font-serif italic">Inspire with Ambesh</em> podcast, and an AI
+                      trainer who has worked with{" "}
+                      <span className="text-gradient-brand animate-gradient">5,000+ professionals</span>{" "}
+                      across 50+ organisations in India, UAE and Africa. He blends an engineering
+                      background with an MBA in International Marketing, a decade of business building,
+                      and a practical, no-hype approach to AI that comes from using it in his own work
+                      every day.
+                    </>
+                  }
+                />
+              </div>
               <Link
-                to="/about"
+                to={authorSec.link_url || "/about"}
                 className="mt-8 inline-flex items-center gap-2 text-base font-semibold text-violet hover:text-pink"
               >
-                Read the full story <ArrowRight className="h-4 w-4" />
+                {authorSec.link_text} <ArrowRight className="h-4 w-4" />
               </Link>
             </Reveal>
           </div>
@@ -436,21 +488,27 @@ function BookPage() {
               <div className="grid gap-10 md:grid-cols-2 md:items-center">
                 <div>
                   <p className="font-mono text-xs uppercase tracking-[0.25em] text-white/50">
-                    Free
+                    {chapterCta.tag}
                   </p>
                   <h3 className="mt-4 text-4xl font-extrabold leading-tight tracking-tighter text-white md:text-5xl">
-                    Get <span className="text-gradient-brand animate-gradient">Chapter 1</span> on
-                    us.
+                    <RichHeading
+                      text={chapterCta.heading}
+                      defaultContent={
+                        <>
+                          Get <span className="text-gradient-brand animate-gradient">Chapter 1</span> on
+                          us.
+                        </>
+                      }
+                    />
                   </h3>
                   <p className="mt-4 text-white/70">
-                    Drop your email. We'll send the first chapter as a PDF - and an invite to the
-                    next AI training cohort.
+                    {chapterCta.description}
                   </p>
                   <Link
-                    to="/training"
+                    to={chapterCta.training_link_url || "/training"}
                     className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white/80 hover:text-white"
                   >
-                    <BookOpen className="h-4 w-4" /> Or explore AI Knowledge programs
+                    <BookOpen className="h-4 w-4" /> {chapterCta.training_link_text}
                   </Link>
                 </div>
                 <form onSubmit={onChapterSubmit} className="flex flex-col gap-3 sm:flex-row">
@@ -458,7 +516,7 @@ function BookPage() {
                     type="email"
                     name="email"
                     required
-                    placeholder="you@company.com"
+                    placeholder={chapterCta.email_placeholder || "you@company.com"}
                     className="h-14 flex-1 rounded-full border border-white/15 bg-white/5 px-6 text-white placeholder:text-white/40 focus:border-white/40 focus:outline-none"
                   />
                   <button
@@ -466,7 +524,7 @@ function BookPage() {
                     className="btn-premium inline-flex h-14 items-center justify-center gap-2 rounded-full px-7 text-base font-semibold"
                   >
                     <span className="relative z-10 flex items-center gap-2">
-                      <Mail className="h-4 w-4" /> Send it
+                      <Mail className="h-4 w-4" /> {chapterCta.btn_text}
                     </span>
                   </button>
                 </form>

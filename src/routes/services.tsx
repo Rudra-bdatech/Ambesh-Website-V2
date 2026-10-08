@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
@@ -24,36 +24,18 @@ import { ProcessLogo } from "@/components/ProcessLogos";
 import { buildMeta, jsonLd, breadcrumbSchema, faqSchema, SITE_URL } from "@/lib/seo";
 import { GridVignetteBackground } from "@/components/ui/vignette-grid-background";
 import { ParticleField } from "@/components/ParticleField";
+import { usePageContent } from "@/hooks/use-page-content";
+import { EXACT_DEFAULT_SERVICES_CONTENT } from "./admin/pages/services";
+import { RichHeading } from "@/components/RichHeading";
 
 export const faqs = [
-  {
-    q: "Who is the Business OS built for?",
-    a: "Founder-led businesses, usually between INR 5 crore and INR 100 crore, where the founder is still the ceiling on growth and systems live mostly in the founder's head.",
-  },
-  {
-    q: "How long does an engagement take?",
-    a: "A typical Business OS engagement runs across 8 to 12 weeks, with the initial OS installed in the first 4 to 6 weeks and adoption support layered on top.",
-  },
-  {
-    q: "Do you replace our tools?",
-    a: "Rarely. Most companies already have the tools they need. What is missing is the Operating System that connects them and the workflows that make them useful.",
-  },
-  {
-    q: "How is AI used inside the Business OS?",
-    a: "AI is installed as leverage inside the workflows your team already runs. It is never a separate track. If AI cannot make a workflow measurably better, we do not force it in.",
-  },
-  {
-    q: "Do you also do standalone AI training?",
-    a: "Yes. AI Training is a core standalone offer. Many companies start with training and later bring in the full Business OS engagement.",
-  },
-  {
-    q: "Do you sign NDAs?",
-    a: "Yes. NDAs are standard for any engagement that touches internal systems, workflows or data.",
-  },
-  {
-    q: "Do you travel internationally?",
-    a: "Yes. Ambesh works with teams across India, UAE and Africa.",
-  },
+  { q: EXACT_DEFAULT_SERVICES_CONTENT.faqs.q1, a: EXACT_DEFAULT_SERVICES_CONTENT.faqs.a1 },
+  { q: EXACT_DEFAULT_SERVICES_CONTENT.faqs.q2, a: EXACT_DEFAULT_SERVICES_CONTENT.faqs.a2 },
+  { q: EXACT_DEFAULT_SERVICES_CONTENT.faqs.q3, a: EXACT_DEFAULT_SERVICES_CONTENT.faqs.a3 },
+  { q: EXACT_DEFAULT_SERVICES_CONTENT.faqs.q4, a: EXACT_DEFAULT_SERVICES_CONTENT.faqs.a4 },
+  { q: EXACT_DEFAULT_SERVICES_CONTENT.faqs.q5, a: EXACT_DEFAULT_SERVICES_CONTENT.faqs.a5 },
+  { q: EXACT_DEFAULT_SERVICES_CONTENT.faqs.q6, a: EXACT_DEFAULT_SERVICES_CONTENT.faqs.a6 },
+  { q: EXACT_DEFAULT_SERVICES_CONTENT.faqs.q7, a: EXACT_DEFAULT_SERVICES_CONTENT.faqs.a7 },
 ];
 
 export const Route = createFileRoute("/services")({
@@ -79,7 +61,6 @@ export const Route = createFileRoute("/services")({
           description:
             "Business Operating System build for founder-led companies. Systems, workflows and AI leverage installed inside the team.",
         }),
-        jsonLd(faqSchema(faqs)),
         jsonLd(
           breadcrumbSchema([
             { name: "Home", path: "/" },
@@ -92,123 +73,40 @@ export const Route = createFileRoute("/services")({
   component: BusinessOSPage,
 });
 
-const heroStats = [
-  { end: 8, prefix: "", suffix: " to 12", decimals: 0, l: "Week engagements", icon: CalendarClock },
-  { end: 50, prefix: "", suffix: "+", decimals: 0, l: "Organisations served", icon: Building2 },
-  { end: 5000, prefix: "", suffix: "+", decimals: 0, l: "Team members trained", icon: Users },
-  { end: 9.5, prefix: "", suffix: "", decimals: 1, l: "Average NPS rating", icon: Star },
-];
-
-const pillars = [
-  {
-    icon: Compass,
-    n: "01",
-    name: "Business Diagnosis",
-    tagline: "See the business the way an outside operator would.",
-    body: "A structured diagnosis of where the business is stuck, where the founder is trapped, and which systems are missing across sales, delivery, operations and hiring.",
-    points: [
-      "Founder and leadership interviews",
-      "Systems and workflow audit",
-      "Team dependency mapping",
-      "Prioritised list of what to fix first",
-    ],
-    cta: "Book a Business Systems Diagnostic",
-    search: { service: "diagnostic" },
-  },
-  {
-    icon: Layers,
-    n: "02",
-    name: "Business OS Install",
-    tagline: "Design and install the operating system the business actually needs.",
-    body: "A custom Operating System across the core functions of the business. Simple enough for the team to actually run, structured enough to scale beyond the founder.",
-    points: [
-      "Sales, delivery, ops and hiring systems",
-      "Documented workflows and SOPs",
-      "AI leverage inside daily workflows",
-      "Tooling stays lean and vendor-neutral",
-    ],
-    cta: "Talk about the OS",
-    search: { service: "strategy" },
-  },
-  {
-    icon: Users,
-    n: "03",
-    name: "Team Adoption",
-    tagline: "The Operating System is worthless if the team does not run it.",
-    body: "AI training and adoption support built into the engagement, so the OS becomes how the team actually works, not another document on a shared drive.",
-    points: [
-      "AI training for the team on real workflows",
-      "Leadership adoption support",
-      "30 and 60 day check-ins",
-      "Handover so the business owns everything",
-    ],
-    cta: "Plan the adoption",
-    search: { service: "training" },
-  },
-];
-
-const audiences = {
-  founders: {
-    label: "Founders",
-    title: "Get out of the daily fires. Get back to building the business.",
-    body: "For founders whose businesses have grown past what one person can hold together. The Business OS gives you back your calendar and your focus.",
-    bullets: [
-      "Clarity on where you are the ceiling",
-      "Systems that do not depend on you being in every meeting",
-      "Leverage from AI without becoming a tech company",
-    ],
-  },
-  leadership: {
-    label: "Leadership",
-    title: "Give your leadership team an operating system, not more initiatives.",
-    body: "For leadership teams inside founder-led businesses. Align on how the business actually runs, before adding another tool or hire.",
-    bullets: [
-      "Shared language for how the business operates",
-      "Fewer overlapping initiatives",
-      "AI adoption aligned to real business goals",
-    ],
-  },
-  operators: {
-    label: "Operators",
-    title: "Turn a busy operations team into a compounding one.",
-    body: "For heads of operations, COOs and integrators who need to install real systems, not just fix fires. The OS gives you a spine to hang everything else on.",
-    bullets: [
-      "Workflow-first operating cadence",
-      "Documented systems the team owns",
-      "AI installed where it earns its keep",
-    ],
-  },
-} as const;
-
-const processSteps = [
-  {
-    step: "01",
-    title: "Audit",
-    body: "A structured 2-week diagnosis of the business. Founder interviews, team interviews, workflow audit. You get an honest picture of where the business is stuck.",
-  },
-  {
-    step: "02",
-    title: "Design",
-    body: "The Operating System is designed for your business. Sales, delivery, operations and hiring workflows, with AI leverage installed where it earns its keep. Nothing generic.",
-  },
-  {
-    step: "03",
-    title: "Build",
-    body: "The OS is built and customized for your business. Documented, trained and running. Leadership is aligned. Existing tools are used where they work, replaced only when they do not.",
-  },
-  {
-    step: "04",
-    title: "Adopt",
-    body: "30 and 60 day adoption check-ins. The team is trained on the OS. The business is handed over to run and improve without ongoing dependency on Ambesh.",
-  },
-];
+function parseStat(
+  rawVal: string,
+  defaultEnd: number,
+  defaultPrefix: string,
+  defaultSuffix: string,
+  defaultDecimals: number
+) {
+  if (!rawVal) {
+    return {
+      end: defaultEnd,
+      prefix: defaultPrefix,
+      suffix: defaultSuffix,
+      decimals: defaultDecimals,
+      isCustomText: false,
+      rawText: "",
+    };
+  }
+  const numMatch = rawVal.match(/^([^0-9.]*)([0-9]+(?:\.[0-9]+)?)(.*)$/);
+  if (numMatch) {
+    const prefix = numMatch[1] || "";
+    const end = parseFloat(numMatch[2]);
+    const suffix = numMatch[3] || "";
+    const decimals = numMatch[2].includes(".") ? numMatch[2].split(".")[1].length : 0;
+    return { end, prefix, suffix, decimals, isCustomText: false, rawText: rawVal };
+  }
+  return { end: defaultEnd, prefix: "", suffix: "", decimals: 0, isCustomText: true, rawText: rawVal };
+}
 
 function ProcessStepCard({
   p,
   i,
   active,
 }: {
-  p: (typeof processSteps)[number];
+  p: { step: string; title: string; body: string };
   i: number;
   active: boolean;
 }) {
@@ -262,7 +160,11 @@ function ProcessStepCard({
   );
 }
 
-function ProcessTimeline() {
+function ProcessTimeline({
+  steps,
+}: {
+  steps: Array<{ step: string; title: string; body: string }>;
+}) {
   const railRef = useRef<HTMLDivElement>(null);
   const [activeStep, setActiveStep] = useState(0);
 
@@ -273,12 +175,12 @@ function ProcessTimeline() {
 
     const update = () => {
       raf = 0;
-      const steps = Array.from(el.querySelectorAll<HTMLElement>("[data-step]"));
+      const stepElements = Array.from(el.querySelectorAll<HTMLElement>("[data-step]"));
       const mid = window.innerHeight * 0.45;
       let best = 0;
       let bestDist = Infinity;
-      for (let idx = 0; idx < steps.length; idx++) {
-        const r = steps[idx].getBoundingClientRect();
+      for (let idx = 0; idx < stepElements.length; idx++) {
+        const r = stepElements[idx].getBoundingClientRect();
         const dist = Math.abs(r.top + r.height / 2 - mid);
         if (dist < bestDist) {
           bestDist = dist;
@@ -305,7 +207,7 @@ function ProcessTimeline() {
   return (
     <div ref={railRef} className="relative mt-16">
       <div className="relative flex flex-col gap-6 md:gap-10">
-        {processSteps.map((p, i) => (
+        {steps.map((p, i) => (
           <ProcessStepCard key={p.step} p={p} i={i} active={i === activeStep} />
         ))}
       </div>
@@ -314,9 +216,152 @@ function ProcessTimeline() {
 }
 
 export function BusinessOSPage() {
-  const [audience, setAudience] = useState<keyof typeof audiences>("founders");
+  const cms = usePageContent("services", EXACT_DEFAULT_SERVICES_CONTENT);
+  const [activeTab, setActiveTab] = useState<"tab1" | "tab2" | "tab3">("tab1");
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const a = audiences[audience];
+
+  // Dynamic Stats
+  const statsList = useMemo(() => {
+    const s1 = parseStat(cms.hero.stat1_val, 8, "", " to 12", 0);
+    const s2 = parseStat(cms.hero.stat2_val, 50, "", "+", 0);
+    const s3 = parseStat(cms.hero.stat3_val, 5000, "", "+", 0);
+    const s4 = parseStat(cms.hero.stat4_val, 9.5, "", "", 1);
+
+    return [
+      { ...s1, l: cms.hero.stat1_label, icon: CalendarClock },
+      { ...s2, l: cms.hero.stat2_label, icon: Building2 },
+      { ...s3, l: cms.hero.stat3_label, icon: Users },
+      { ...s4, l: cms.hero.stat4_label, icon: Star },
+    ];
+  }, [cms.hero]);
+
+  // Dynamic Pillars
+  const pillarsList = useMemo(() => {
+    return [
+      {
+        icon: Compass,
+        n: "01",
+        name: cms.pillars.p1_name,
+        tagline: cms.pillars.p1_tagline,
+        body: cms.pillars.p1_body,
+        points: [
+          cms.pillars.p1_point1,
+          cms.pillars.p1_point2,
+          cms.pillars.p1_point3,
+          cms.pillars.p1_point4,
+        ].filter(Boolean),
+        cta: cms.pillars.p1_cta,
+        search: { service: "diagnostic" },
+      },
+      {
+        icon: Layers,
+        n: "02",
+        name: cms.pillars.p2_name,
+        tagline: cms.pillars.p2_tagline,
+        body: cms.pillars.p2_body,
+        points: [
+          cms.pillars.p2_point1,
+          cms.pillars.p2_point2,
+          cms.pillars.p2_point3,
+          cms.pillars.p2_point4,
+        ].filter(Boolean),
+        cta: cms.pillars.p2_cta,
+        search: { service: "strategy" },
+      },
+      {
+        icon: Users,
+        n: "03",
+        name: cms.pillars.p3_name,
+        tagline: cms.pillars.p3_tagline,
+        body: cms.pillars.p3_body,
+        points: [
+          cms.pillars.p3_point1,
+          cms.pillars.p3_point2,
+          cms.pillars.p3_point3,
+          cms.pillars.p3_point4,
+        ].filter(Boolean),
+        cta: cms.pillars.p3_cta,
+        search: { service: "training" },
+      },
+    ];
+  }, [cms.pillars]);
+
+  // Dynamic Audiences Tabs
+  const audienceTabs = useMemo(() => {
+    return {
+      tab1: {
+        label: cms.audiences.tab1_label,
+        title: cms.audiences.tab1_title,
+        body: cms.audiences.tab1_body,
+        bullets: [
+          cms.audiences.tab1_bullet1,
+          cms.audiences.tab1_bullet2,
+          cms.audiences.tab1_bullet3,
+        ].filter(Boolean),
+      },
+      tab2: {
+        label: cms.audiences.tab2_label,
+        title: cms.audiences.tab2_title,
+        body: cms.audiences.tab2_body,
+        bullets: [
+          cms.audiences.tab2_bullet1,
+          cms.audiences.tab2_bullet2,
+          cms.audiences.tab2_bullet3,
+        ].filter(Boolean),
+      },
+      tab3: {
+        label: cms.audiences.tab3_label,
+        title: cms.audiences.tab3_title,
+        body: cms.audiences.tab3_body,
+        bullets: [
+          cms.audiences.tab3_bullet1,
+          cms.audiences.tab3_bullet2,
+          cms.audiences.tab3_bullet3,
+        ].filter(Boolean),
+      },
+    };
+  }, [cms.audiences]);
+
+  const currentAudience = audienceTabs[activeTab] || audienceTabs.tab1;
+
+  // Dynamic Process Steps
+  const processStepsList = useMemo(() => {
+    return [
+      {
+        step: cms.process.s1_num,
+        title: cms.process.s1_title,
+        body: cms.process.s1_body,
+      },
+      {
+        step: cms.process.s2_num,
+        title: cms.process.s2_title,
+        body: cms.process.s2_body,
+      },
+      {
+        step: cms.process.s3_num,
+        title: cms.process.s3_title,
+        body: cms.process.s3_body,
+      },
+      {
+        step: cms.process.s4_num,
+        title: cms.process.s4_title,
+        body: cms.process.s4_body,
+      },
+    ];
+  }, [cms.process]);
+
+  // Dynamic FAQs
+  const faqsList = useMemo(() => {
+    return [
+      { q: cms.faqs.q1, a: cms.faqs.a1 },
+      { q: cms.faqs.q2, a: cms.faqs.a2 },
+      { q: cms.faqs.q3, a: cms.faqs.a3 },
+      { q: cms.faqs.q4, a: cms.faqs.a4 },
+      { q: cms.faqs.q5, a: cms.faqs.a5 },
+      { q: cms.faqs.q6, a: cms.faqs.a6 },
+      { q: cms.faqs.q7, a: cms.faqs.a7 },
+    ].filter((f) => f.q && f.a);
+  }, [cms.faqs]);
 
   return (
     <>
@@ -335,20 +380,17 @@ export function BusinessOSPage() {
         <div className="container-edit relative pt-10 pb-20 md:pt-14 md:pb-24">
           <Reveal eager>
             <p className="eyebrow eyebrow-indigo flex items-center gap-2">
-              <Layers className="h-3.5 w-3.5" /> Business OS
+              <Layers className="h-3.5 w-3.5" /> {cms.hero.eyebrow}
             </p>
           </Reveal>
           <Reveal delay={100} eager>
             <h1 className="mt-6 max-w-5xl font-display text-[2.4rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl md:text-6xl lg:text-[4.25rem]">
-              Build the operating system your business needs to{" "}
-              <span className="text-gradient-brand animate-gradient">scale without you.</span>
+              <RichHeading text={cms.hero.heading} />
             </h1>
           </Reveal>
           <Reveal delay={250} eager>
             <p className="mt-8 max-w-2xl text-lg text-ink-soft">
-              A structured, hands-on partnership for founder-led companies. We design your workflow
-              strategy, document functional SOPs, and install practical AI tools directly into your
-              team so operations run smoothly.
+              {cms.hero.subheading}
             </p>
           </Reveal>
           <Reveal delay={320} eager>
@@ -359,21 +401,21 @@ export function BusinessOSPage() {
                 className="btn-premium inline-flex h-11 flex-1 items-center justify-center gap-1 min-[375px]:gap-1.5 whitespace-nowrap rounded-full px-2 min-[375px]:px-3 text-[11px] min-[360px]:text-xs min-[400px]:text-sm font-semibold sm:h-14 sm:flex-none sm:gap-2 sm:justify-start sm:px-8 sm:text-base"
               >
                 <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
-                  Book a strategy call <ArrowRight className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+                  {cms.hero.primary_btn_text} <ArrowRight className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                 </span>
               </Link>
               <Link
                 to="/training"
                 className="inline-flex h-11 flex-1 items-center justify-center gap-1 min-[375px]:gap-1.5 whitespace-nowrap rounded-full border border-ink/15 bg-canvas/80 px-2 min-[375px]:px-3 text-[11px] min-[360px]:text-xs min-[400px]:text-sm font-semibold text-ink hover:border-ink/40 sm:h-14 sm:flex-none sm:justify-start sm:px-8 sm:text-base"
               >
-                See AI Training
+                {cms.hero.secondary_btn_text}
               </Link>
             </div>
           </Reveal>
 
           <Reveal delay={400} eager>
             <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {heroStats.map((s) => (
+              {statsList.map((s) => (
                 <div
                   key={s.l}
                   className="custom-theme-card-static relative h-full overflow-hidden rounded-[20px] p-4 text-center backdrop-blur shadow-soft"
@@ -387,12 +429,16 @@ export function BusinessOSPage() {
                       <s.icon className="h-3.5 w-3.5" />
                     </div>
                     <p className="stats-value font-display text-2xl font-extrabold tracking-tight text-gradient-brand animate-gradient md:text-3xl">
-                      <AnimatedCounter
-                        end={s.end}
-                        prefix={s.prefix}
-                        suffix={s.suffix}
-                        decimals={s.decimals}
-                      />
+                      {s.isCustomText ? (
+                        s.rawText
+                      ) : (
+                        <AnimatedCounter
+                          end={s.end}
+                          prefix={s.prefix}
+                          suffix={s.suffix}
+                          decimals={s.decimals}
+                        />
+                      )}
                     </p>
                   </div>
                   <p className="stats-label relative mt-2 text-xs uppercase tracking-wider font-semibold text-ink-muted leading-tight">
@@ -410,20 +456,18 @@ export function BusinessOSPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <Wrench className="h-3.5 w-3.5" /> What gets built
+              <Wrench className="h-3.5 w-3.5" /> {cms.pillars.eyebrow}
             </p>
-            <h2 className="mt-4 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tighter md:text-6xl">
-              Three layers.{" "}
-              <span className="text-gradient-brand animate-gradient">One Operating System.</span>
+            <h2 className="mt-4 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tighter md:text-6xl text-ink">
+              <RichHeading text={cms.pillars.heading} />
             </h2>
             <p className="mt-6 max-w-2xl text-lg text-ink-muted">
-              Every engagement follows the same three layers, sized to the business. Some companies
-              need the full OS. Others need one layer deeply installed. The diagnosis decides.
+              {cms.pillars.subheading}
             </p>
           </Reveal>
 
           <div className="mt-16 grid gap-6 lg:grid-cols-3">
-            {pillars.map((p, i) => {
+            {pillarsList.map((p, i) => {
               return (
                 <Reveal key={p.n} delay={100}>
                   <div className="custom-theme-card group relative flex h-full flex-col overflow-hidden rounded-3xl p-8">
@@ -481,27 +525,27 @@ export function BusinessOSPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <Users className="h-3.5 w-3.5" /> Who this is for
+              <Users className="h-3.5 w-3.5" /> {cms.audiences.eyebrow}
             </p>
-            <h2 className="mt-4 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tighter md:text-6xl">
-              Built for founder-led <span className="text-gradient-brand">businesses.</span>
+            <h2 className="mt-4 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tighter md:text-6xl text-ink">
+              <RichHeading text={cms.audiences.heading} />
             </h2>
             <p className="mt-6 max-w-2xl text-lg text-ink-muted">
-              The Business OS is not for early-stage startups looking for product-market fit, and
-              not for large corporates with layers of structure. It is for founder-led businesses
-              that have grown past what one person can hold together.
+              {cms.audiences.subheading}
             </p>
           </Reveal>
 
           <div className="mt-12 flex flex-wrap gap-2 border-b border-rule">
-            {(Object.keys(audiences) as Array<keyof typeof audiences>).map((key) => (
+            {(["tab1", "tab2", "tab3"] as const).map((key) => (
               <button
                 key={key}
-                onClick={() => setAudience(key)}
-                className={`relative rounded-t-xl px-5 py-3 text-sm font-semibold transition-colors ${audience === key ? "text-ink" : "text-ink-muted hover:text-ink"}`}
+                onClick={() => setActiveTab(key)}
+                className={`relative rounded-t-xl px-5 py-3 text-sm font-semibold transition-colors ${
+                  activeTab === key ? "text-ink" : "text-ink-muted hover:text-ink"
+                }`}
               >
-                {audiences[key].label}
-                {audience === key && (
+                {audienceTabs[key].label}
+                {activeTab === key && (
                   <span className="absolute inset-x-0 -bottom-px h-0.5 bg-gradient-brand animate-gradient" />
                 )}
               </button>
@@ -509,18 +553,18 @@ export function BusinessOSPage() {
           </div>
 
           <div
-            key={audience}
+            key={activeTab}
             className="mt-12 grid animate-[fade-in_0.4s_ease-out] gap-12 md:grid-cols-12"
           >
             <div className="md:col-span-7">
-              <h3 className="text-3xl font-extrabold leading-tight tracking-tight md:text-5xl">
-                {a.title}
+              <h3 className="text-3xl font-extrabold leading-tight tracking-tight md:text-5xl text-ink">
+                {currentAudience.title}
               </h3>
-              <p className="mt-6 text-lg text-ink-soft">{a.body}</p>
+              <p className="mt-6 text-lg text-ink-soft">{currentAudience.body}</p>
             </div>
             <div className="md:col-span-5">
               <ul className="space-y-4">
-                {a.bullets.map((b) => (
+                {currentAudience.bullets.map((b) => (
                   <li
                     key={b}
                     className="custom-theme-card-static flex items-start gap-3 rounded-2xl p-5"
@@ -528,7 +572,7 @@ export function BusinessOSPage() {
                     <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white">
                       <Check className="h-3.5 w-3.5" />
                     </span>
-                    <span className="text-base font-medium">{b}</span>
+                    <span className="text-base font-medium text-ink">{b}</span>
                   </li>
                 ))}
               </ul>
@@ -542,19 +586,17 @@ export function BusinessOSPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <Compass className="h-3.5 w-3.5" /> The process
+              <Compass className="h-3.5 w-3.5" /> {cms.process.eyebrow}
             </p>
-            <h2 className="mt-4 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tighter md:text-6xl">
-              How an OS engagement{" "}
-              <span className="text-gradient-brand animate-gradient">actually runs.</span>
+            <h2 className="mt-4 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tighter md:text-6xl text-ink">
+              <RichHeading text={cms.process.heading} />
             </h2>
             <p className="mt-6 max-w-2xl text-lg text-ink-muted">
-              Every engagement follows the same four steps, sized to the business. Typical duration
-              is 8 to 12 weeks.
+              {cms.process.subheading}
             </p>
           </Reveal>
 
-          <ProcessTimeline />
+          <ProcessTimeline steps={processStepsList} />
         </div>
       </section>
 
@@ -575,23 +617,21 @@ export function BusinessOSPage() {
             <div className="grid gap-8 rounded-3xl custom-theme-card-static p-8 md:grid-cols-12 md:items-center md:gap-12 md:p-12">
               <div className="md:col-span-7">
                 <p className="eyebrow flex items-center gap-2">
-                  <GraduationCap className="h-3 w-3" /> AI Training
+                  <GraduationCap className="h-3 w-3" /> {cms.trainingCrosslink.eyebrow}
                 </p>
-                <h2 className="mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">
-                  Need AI training without the full OS build?
+                <h2 className="mt-3 text-3xl font-extrabold tracking-tight md:text-4xl text-ink">
+                  {cms.trainingCrosslink.heading}
                 </h2>
                 <p className="mt-4 text-base text-ink-soft">
-                  AI Training is a standalone offer. Leadership workshops, department workshops, and
-                  multi-day team bootcamps. Many companies start here and later bring in the full
-                  Business OS engagement.
+                  {cms.trainingCrosslink.body}
                 </p>
               </div>
               <div className="md:col-span-5 md:text-right">
                 <Link
                   to="/training"
-                  className="inline-flex h-12 items-center gap-2 rounded-full border border-ink bg-canvas px-6 text-sm font-semibold text-ink hover:bg-ink hover:text-canvas"
+                  className="inline-flex h-12 items-center gap-2 rounded-full border border-ink bg-canvas px-6 text-sm font-semibold text-ink hover:bg-ink hover:text-canvas transition-colors"
                 >
-                  Explore AI Training <ArrowRight className="h-4 w-4" />
+                  {cms.trainingCrosslink.btn_text} <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>
@@ -604,21 +644,21 @@ export function BusinessOSPage() {
         <div className="container-edit relative grid gap-12 md:grid-cols-12 md:gap-16">
           <Reveal className="md:col-span-4">
             <p className="eyebrow flex items-center gap-2">
-              <MessageCircle className="h-3.5 w-3.5" /> Common questions
+              <MessageCircle className="h-3.5 w-3.5" /> {cms.faqs.eyebrow}
             </p>
-            <h2 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-tighter md:text-5xl">
-              Before you <span className="text-gradient-brand animate-gradient">ask.</span>
+            <h2 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-tighter md:text-5xl text-ink">
+              <RichHeading text={cms.faqs.heading} />
             </h2>
           </Reveal>
           <div className="md:col-span-8">
             <ul className="divide-y divide-rule border-y border-rule">
-              {faqs.map((f, i) => (
-                <li key={f.q}>
+              {faqsList.map((f, i) => (
+                <li key={`${f.q}-${i}`}>
                   <button
                     onClick={() => setOpenFaq(openFaq === i ? null : i)}
                     className="flex w-full items-center justify-between gap-4 py-6 text-left"
                   >
-                    <span className="text-lg font-semibold md:text-xl">{f.q}</span>
+                    <span className="text-lg font-semibold md:text-xl text-ink">{f.q}</span>
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sand">
                       {openFaq === i ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                     </span>
@@ -670,19 +710,17 @@ export function BusinessOSPage() {
         <div className="container-edit relative py-12 md:py-20">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <Sparkles className="h-3.5 w-3.5" /> Start with a diagnosis
+              <Sparkles className="h-3.5 w-3.5" /> {cms.cta.eyebrow}
             </p>
           </Reveal>
           <Reveal delay={100}>
             <h2 className="mx-auto mt-6 max-w-4xl text-4xl font-extrabold leading-[1.05] tracking-tighter text-white md:text-6xl">
-              The strongest engagements begin with an honest audit,{" "}
-              <span className="text-gradient-brand animate-gradient">not a proposal.</span>
+              <RichHeading text={cms.cta.heading} />
             </h2>
           </Reveal>
           <Reveal delay={200}>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-white/70">
-              A 30-minute Business Systems Diagnostic is usually enough to know whether we should
-              work together, and where the leverage is.
+            <p className="mx-auto mt-8 max-w-2xl text-lg text-white/70">
+              {cms.cta.subheading}
             </p>
           </Reveal>
           <Reveal delay={300}>
@@ -693,12 +731,12 @@ export function BusinessOSPage() {
                 className="btn-premium inline-flex h-12 items-center gap-1 min-[375px]:gap-1.5 whitespace-nowrap rounded-full px-3.5 min-[375px]:px-5 text-[11px] min-[360px]:text-xs min-[400px]:text-sm font-semibold text-white sm:h-14 sm:gap-2 sm:px-8 sm:text-base"
               >
                 <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
-                  Book a Business Systems Diagnostic{" "}
+                  {cms.cta.button_text}{" "}
                   <ArrowRight className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                 </span>
               </Link>
               <p className="text-xs text-white/50">
-                Responds within 24 hours · No sales script · Just a real conversation.
+                {cms.cta.note}
               </p>
             </div>
           </Reveal>

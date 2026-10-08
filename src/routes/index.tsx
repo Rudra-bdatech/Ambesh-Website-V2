@@ -30,6 +30,9 @@ import { BookStickySection } from "@/components/BookStickySection";
 import { buildMeta, jsonLd, breadcrumbSchema, SITE_URL } from "@/lib/seo";
 import { GridVignetteBackground } from "@/components/ui/vignette-grid-background";
 import { ParticleField } from "@/components/ParticleField";
+import { RichHeading } from "@/components/RichHeading";
+import { usePageContent } from "@/hooks/use-page-content";
+import { EXACT_DEFAULT_HOME_CONTENT } from "./admin/pages/home";
 
 export const Route = createFileRoute("/")({
   head: () => {
@@ -194,15 +197,41 @@ function ScrollProgress() {
 }
 
 function HomePage() {
+  const cms = usePageContent("home", EXACT_DEFAULT_HOME_CONTENT);
   const [hoveredService, setHoveredService] = useState<number | null>(null);
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [spotIndex, setSpotIndex] = useState(0);
   const problemsRef = useRef<HTMLDivElement>(null);
   const [easeActive, setEaseActive] = useState(0);
   const easeRef = useRef<HTMLDivElement>(null);
   const testimonialsRef = useRef<HTMLDivElement>(null);
   const starsInView = useInView(testimonialsRef, { once: true, margin: "0px 0px -80px 0px" });
+
+  const dynamicProblems = [
+    cms.problems?.problem_1,
+    cms.problems?.problem_2,
+    cms.problems?.problem_3,
+    cms.problems?.problem_4,
+    cms.problems?.problem_5,
+    cms.problems?.problem_6,
+  ].filter(Boolean) as string[];
+
+  const activeProblems = dynamicProblems.length > 0 ? dynamicProblems : problems;
+
+  // Floating badges parsers
+  const badge1Raw = cms.hero?.floatingBadge1 || "13+ Years of Experience";
+  const badge1Parts = badge1Raw.trim().split(/\s+/);
+  const badge1Num = badge1Parts[0] || "13+";
+  const badge1Label = badge1Parts.length > 1 ? badge1Parts.slice(1).join(" ") : "Years of Experience";
+
+  const badge2Raw = cms.hero?.floatingBadge2 || "100+ Businesses Scaled";
+  const badge2Parts = badge2Raw.trim().split(/\s+/);
+  const badge2Num = badge2Parts[0] || "100+";
+  const badge2Label = badge2Parts.length > 1 ? badge2Parts.slice(1).join(" ") : "Businesses Scaled";
+
+  const badge3Raw = cms.hero?.floatingBadge3 || "5,000+ Professionals Trained";
+  const badge3Parts = badge3Raw.trim().split(/\s+/);
+  const badge3Num = badge3Parts[0] || "5,000+";
+  const badge3Label = badge3Parts.length > 1 ? badge3Parts.slice(1).join(" ") : "Professionals Trained";
 
   useEffect(() => {
     const el = problemsRef.current;
@@ -215,7 +244,7 @@ function HomePage() {
           if (e.isIntersecting && !running) {
             running = true;
             timer = setInterval(() => {
-              setSpotIndex((i) => (i + 1) % problems.length);
+              setSpotIndex((i) => (i + 1) % activeProblems.length);
             }, 1700);
           } else if (!e.isIntersecting && running) {
             running = false;
@@ -230,7 +259,7 @@ function HomePage() {
       observer.disconnect();
       if (timer) clearInterval(timer);
     };
-  }, []);
+  }, [activeProblems.length]);
 
   useEffect(() => {
     const el = easeRef.current;
@@ -260,15 +289,6 @@ function HomePage() {
     };
   }, []);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
-
-
   return (
     <div className="homepage-wrapper">
       <ScrollProgress />
@@ -291,31 +311,22 @@ function HomePage() {
               <div className="animate-fade-in-up">
                 <span className="eyebrow flex items-center gap-2 whitespace-nowrap max-sm:gap-1 max-sm:px-2 max-sm:text-[0.45rem] min-[360px]:max-sm:text-[0.52rem] max-sm:tracking-[0.08em]">
                   <Sparkles className="h-3.5 w-3.5" />
-                  AI Strategist &nbsp;|&nbsp; Author &nbsp;|&nbsp; Entrepreneur
+                  {cms.hero?.eyebrow || "AI Strategist  |  Author  |  Entrepreneur"}
                 </span>
               </div>
 
               <h1 className="animate-fade-in-up delay-80 mt-6 font-display text-[8.5vw] min-[360px]:text-[2.4rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-ink dark:text-white sm:text-5xl md:text-6xl lg:text-[4rem]">
-                I Help Founders Scale Their{" "}
-                <span className="relative inline-block">
-                  <span className="font-serif italic font-medium text-ink dark:text-white">
-                    Service Business
-                  </span>
-                  <span
-                    className="absolute -bottom-1 left-0 h-[3px] w-full rounded-full"
-                    style={{ background: "var(--accent)" }}
-                  />
-                </span>{" "}
-                <span className="font-serif italic font-medium text-gradient-brand">
-                  Without Depending on Them.
-                </span>
+                <RichHeading
+                  text={
+                    cms.hero?.heading ||
+                    "I Help Founders Scale Their [Service Business] *Without Depending on Them.*"
+                  }
+                />
               </h1>
 
               <p className="animate-fade-in-up delay-150 mt-4 max-w-2xl text-base leading-[1.6] text-ink-soft md:text-lg">
-                For over 13 years, I've worked across business development, sales, marketing,
-                branding, operations, technology, and entrepreneurship. Today, I help founders
-                simplify their business, build better systems, and use AI where it creates real
-                business value.
+                {cms.hero?.subheading ||
+                  "For over 13 years, I've worked across business development, sales, marketing, branding, operations, technology, and entrepreneurship. Today, I help founders simplify their business, build better systems, and use AI where it creates real business value."}
               </p>
 
               <div className="animate-fade-in-up delay-280 mt-6 flex flex-col items-start">
@@ -362,8 +373,7 @@ function HomePage() {
                     <div>
                       <div className="h-px w-16 bg-white/40" />
                       <p className="mt-4 font-serif text-xl italic text-white/90">
-                        &ldquo;A business that only runs when the founder pushes it, is a job with
-                        extra steps.&rdquo;
+                        &ldquo;{cms.hero?.quote || "A business that only runs when the founder pushes it, is a job with extra steps."}&rdquo;
                       </p>
                       <p className="mt-3 font-mono text-[0.65rem] font-bold uppercase tracking-[0.25em] text-white">
                         Ambesh Tiwari
@@ -375,32 +385,32 @@ function HomePage() {
                   className="absolute -bottom-4 -right-4 -z-10 h-full w-full rounded-[20px]"
                   style={{ background: "var(--accent-soft)" }}
                   aria-hidden
-                />{" "}
-                {/* Floating circle 1: 13+ Years (Bottom-left) */}
+                />
+                {/* Floating circle 1: Dynamic badge 1 */}
                 <div className="animate-float-1 absolute top-[22%] left-0 lg:-left-12 z-20 w-[70px] h-[70px] md:w-[96px] md:h-[96px] rounded-full bg-canvas/40 backdrop-blur-md border border-rule shadow-lift hover:scale-105 hover:border-accent transition-all duration-300 flex flex-col items-center justify-center p-1 text-center">
                   <span className="font-display text-[12px] md:text-lg font-extrabold text-gradient-brand animate-gradient hero-stat-solid-white">
-                    13+
+                    {badge1Num}
                   </span>
                   <span className="text-[6px] md:text-[8px] uppercase tracking-wider font-extrabold text-ink leading-tight mt-1 max-w-[58px] md:max-w-[80px]">
-                    Years of Experience
+                    {badge1Label}
                   </span>
                 </div>
-                {/* Floating circle 2: 100+ Businesses (Bottom-right) */}
+                {/* Floating circle 2: Dynamic badge 2 */}
                 <div className="animate-float-2 absolute -bottom-10 right-0 lg:-bottom-10 lg:-right-12 z-20 w-[70px] h-[70px] md:w-[96px] md:h-[96px] rounded-full bg-canvas/40 backdrop-blur-md border border-rule shadow-lift hover:scale-105 hover:border-accent transition-all duration-300 flex flex-col items-center justify-center p-1 text-center">
                   <span className="font-display text-[12px] md:text-lg font-extrabold text-gradient-brand animate-gradient hero-stat-solid-white">
-                    100+
+                    {badge2Num}
                   </span>
                   <span className="text-[6px] md:text-[8px] uppercase tracking-wider font-extrabold text-ink leading-tight mt-1 max-w-[58px] md:max-w-[80px]">
-                    Businesses Scaled
+                    {badge2Label}
                   </span>
                 </div>
-                {/* Floating circle 3: 5,000+ Trained (Right side middle) */}
+                {/* Floating circle 3: Dynamic badge 3 */}
                 <div className="animate-float-3 absolute top-[35%] right-0 lg:-right-12 z-20 w-[70px] h-[70px] md:w-[96px] md:h-[96px] rounded-full bg-canvas/40 backdrop-blur-md border border-rule shadow-lift hover:scale-105 hover:border-accent transition-all duration-300 flex flex-col items-center justify-center p-1 text-center">
                   <span className="font-display text-[12px] md:text-lg font-extrabold text-gradient-brand animate-gradient hero-stat-solid-white">
-                    5,000+
+                    {badge3Num}
                   </span>
                   <span className="text-[6px] md:text-[8px] uppercase tracking-wider font-extrabold text-ink leading-tight mt-1 max-w-[58px] md:max-w-[80px]">
-                    Professionals Trained
+                    {badge3Label}
                   </span>
                 </div>
               </div>
@@ -457,30 +467,27 @@ function HomePage() {
           <div className="grid gap-12 md:grid-cols-12 md:items-start lg:gap-16">
             <Reveal className="md:col-span-5">
               <p className="eyebrow eyebrow-indigo flex items-center gap-2">
-                <AlertCircle className="h-3.5 w-3.5" /> The Problems I Solve
+                <AlertCircle className="h-3.5 w-3.5" /> {cms.problems?.section_eyebrow || "The Problems I Solve"}
               </p>
               <h2 className="mt-4 pb-2 font-display text-[2.2rem] sm:text-4xl md:text-5xl lg:text-[3.25rem] font-extrabold leading-[1.1] tracking-[-0.03em] text-ink">
-                Running a business
-                <br />
-                shouldn't feel like
-                <br />
-                <span className="font-serif italic font-medium text-gradient-brand pr-1">
-                  putting out fires
-                  <br />
-                  every day.
-                </span>
+                <RichHeading
+                  text={
+                    cms.problems?.section_heading ||
+                    "Running a business\nshouldn't feel like\n*putting out fires\nevery day.*"
+                  }
+                />
               </h2>
             </Reveal>
             <Reveal delay={120} className="md:col-span-7">
               <div className="space-y-4 text-ink-soft">
                 <TypeLine
-                  text="I help founders solve problems like:"
+                  text={cms.problems?.section_subheading || "I help founders solve problems like:"}
                   className="text-ink text-xl md:text-2xl font-bold tracking-tight"
                 />
               </div>
               <div ref={problemsRef} className="relative mt-8">
                 <ul className="grid gap-4 sm:grid-cols-2">
-                  {problems.map((p, i) => (
+                  {activeProblems.map((p, i) => (
                     <motion.li
                       key={p}
                       initial={{ opacity: 0, y: 24 }}
@@ -533,19 +540,20 @@ function HomePage() {
           <div className="grid gap-6 md:grid-cols-12 md:items-end md:gap-12 mb-12">
             <Reveal className="md:col-span-7">
               <p className="eyebrow eyebrow-indigo flex items-center gap-2">
-                <Compass className="h-3.5 w-3.5" /> My Approach
+                <Compass className="h-3.5 w-3.5" /> {cms.ease?.section_eyebrow || "My Approach"}
               </p>
               <h2 className="mt-4 font-display text-[2.2rem] font-extrabold leading-[1.1] tracking-[-0.03em] sm:text-4xl md:text-5xl text-ink">
-                Better businesses aren't built by{" "}
-                <span className="font-serif italic font-medium text-gradient-brand">
-                  adding more tools.
-                </span>
+                <RichHeading
+                  text={
+                    cms.ease?.section_heading ||
+                    "Better businesses aren't built by *adding more tools.*"
+                  }
+                />
               </h2>
             </Reveal>
             <Reveal delay={100} className="md:col-span-5">
               <p className="text-base leading-[1.6] text-ink-soft md:text-lg dark:text-white">
-                They're built by improving the way work gets done. The EASE Framework is a
-                structured path to simplification, clarity, and automation.
+                {cms.ease?.section_subheading || "They're built by improving the way work gets done. The EASE Framework is a structured path to simplification, clarity, and automation."}
               </p>
             </Reveal>
           </div>
@@ -553,7 +561,7 @@ function HomePage() {
           <div className="text-center mb-12">
             <Reveal>
               <h3 className="font-display text-2xl font-extrabold text-ink tracking-tight">
-                The EASE Framework
+                {cms.ease?.framework_title || "The EASE Framework"}
               </h3>
             </Reveal>
           </div>
@@ -563,23 +571,23 @@ function HomePage() {
             {[
               {
                 stage: "Stage 01",
-                label: "Eliminate",
-                desc: "Remove work that doesn't create value.",
+                label: cms.ease?.stage1_label || "Eliminate",
+                desc: cms.ease?.stage1_desc || "Remove work that doesn't create value.",
               },
               {
                 stage: "Stage 02",
-                label: "Automate",
-                desc: "Use AI only after the process is clear.",
+                label: cms.ease?.stage2_label || "Automate",
+                desc: cms.ease?.stage2_desc || "Use AI only after the process is clear.",
               },
               {
                 stage: "Stage 03",
-                label: "Streamline",
-                desc: "Connect people, processes, and technology.",
+                label: cms.ease?.stage3_label || "Streamline",
+                desc: cms.ease?.stage3_desc || "Connect people, processes, and technology.",
               },
               {
                 stage: "Stage 04",
-                label: "Execute",
-                desc: "Turn ideas into consistent business results.",
+                label: cms.ease?.stage4_label || "Execute",
+                desc: cms.ease?.stage4_desc || "Turn ideas into consistent business results.",
               },
             ].map(({ stage, label, desc }, i) => (
               <Reveal key={label} delay={i * 120} className="h-full">
@@ -649,17 +657,17 @@ function HomePage() {
           <div className="grid gap-6 md:grid-cols-12 md:items-end md:gap-12">
             <Reveal className="md:col-span-7">
               <p className="eyebrow eyebrow-indigo flex items-center gap-2">
-                <Wrench className="h-3.5 w-3.5" /> How I Help
+                <Wrench className="h-3.5 w-3.5" /> {cms.howIHelp?.section_eyebrow || "How I Help"}
               </p>
               <h2 className="mt-4 font-display text-[2.2rem] font-extrabold leading-[1.1] tracking-[-0.03em] sm:text-4xl md:text-5xl">
-                I Build. I Advise.{" "}
-                <span className="font-serif italic font-medium text-gradient-brand">I Train.</span>
+                <RichHeading
+                  text={cms.howIHelp?.section_heading || "I Build. I Advise. *I Train.*"}
+                />
               </h2>
             </Reveal>
             <Reveal delay={100} className="md:col-span-5">
               <p className="text-base leading-[1.6] text-ink-soft md:text-lg dark:text-white">
-                Practical, hands-on support for founder-led businesses. Building software-driven
-                operations, advising on management processes, and training teams for AI adoption.
+                {cms.howIHelp?.section_subheading || "Practical, hands-on support for founder-led businesses. Building software-driven operations, advising on management processes, and training teams for AI adoption."}
               </p>
             </Reveal>
           </div>
@@ -668,25 +676,25 @@ function HomePage() {
             {[
               {
                 num: "01",
-                title: "Build",
-                eyebrow: "Operating Systems",
-                desc: "I build practical AI products to turn messy business operations into systems people actually use.",
+                title: cms.howIHelp?.card1_title || "Build",
+                eyebrow: cms.howIHelp?.card1_eyebrow || "Operating Systems",
+                desc: cms.howIHelp?.card1_desc || "I build practical AI products to turn messy business operations into systems people actually use.",
                 image: "/service-os.jpg",
                 href: "/services",
               },
               {
                 num: "02",
-                title: "Advice",
-                eyebrow: "Better Ways of Working",
-                desc: "I help founders improve systems, align execution rhythms, and drive practical AI adoption across the team.",
+                title: cms.howIHelp?.card2_title || "Advice",
+                eyebrow: cms.howIHelp?.card2_eyebrow || "Better Ways of Working",
+                desc: cms.howIHelp?.card2_desc || "I help founders improve systems, align execution rhythms, and drive practical AI adoption across the team.",
                 image: "/service-transformation.jpg",
                 href: "/services",
               },
               {
                 num: "03",
-                title: "Train",
-                eyebrow: "Practical AI Training",
-                desc: "I help teams & professionals to use AI in their daily work, not only learn about new tools.",
+                title: cms.howIHelp?.card3_title || "Train",
+                eyebrow: cms.howIHelp?.card3_eyebrow || "Practical AI Training",
+                desc: cms.howIHelp?.card3_desc || "I help teams & professionals to use AI in their daily work, not only learn about new tools.",
                 image: "/service-ai-training.jpg",
                 href: "/services",
               },
@@ -772,38 +780,43 @@ function HomePage() {
         ref={testimonialsRef}
         className="relative overflow-hidden bg-canvas home-section-alt py-16 md:py-24"
       >
-
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow eyebrow-indigo flex items-center gap-2">
-              <Star className="h-3.5 w-3.5" /> What clients say
+              <Star className="h-3.5 w-3.5" /> {cms.testimonials?.section_eyebrow || "What clients say"}
             </p>
             <h2 className="mt-4 max-w-3xl font-display text-[2.2rem] font-extrabold leading-[1.1] tracking-[-0.03em] sm:text-4xl md:text-5xl text-ink">
-              Results that speak{" "}
-              <span className="font-serif italic font-medium text-gradient-brand">for themselves.</span>
+              <RichHeading
+                text={
+                  cms.testimonials?.section_heading || "Results that speak *for themselves.*"
+                }
+              />
             </h2>
           </Reveal>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {[
               {
                 quote:
+                  cms.testimonials?.t1_quote ||
                   "Ambesh didn't just teach AI — he rewired how our team thinks about work. Three months later, we've cut manual reporting time by 60% and our managers actually own their numbers.",
-                name: "Chief Operating Officer",
-                role: "Mid-size Financial Services Firm",
+                name: cms.testimonials?.t1_name || "Chief Operating Officer",
+                role: cms.testimonials?.t1_role || "Mid-size Financial Services Firm",
                 rating: 5,
               },
               {
                 quote:
+                  cms.testimonials?.t2_quote ||
                   "We've had plenty of consultants come in with slides. Ambesh came in with a system. The SOPs, the accountability structure, the AI workflows — it all clicked together in weeks, not quarters.",
-                name: "Founder & CEO",
-                role: "E-commerce Brand, UAE",
+                name: cms.testimonials?.t2_name || "Founder & CEO",
+                role: cms.testimonials?.t2_role || "E-commerce Brand, UAE",
                 rating: 5,
               },
               {
                 quote:
+                  cms.testimonials?.t3_quote ||
                   "The session rating doesn't lie — 9.6 out of 10 from a room of sceptical senior managers. He made AI feel practical, not threatening. People left wanting to try things the very next day.",
-                name: "Head of Learning & Development",
-                role: "Large Retail Group, India",
+                name: cms.testimonials?.t3_name || "Head of Learning & Development",
+                role: cms.testimonials?.t3_role || "Large Retail Group, India",
                 rating: 5,
               },
             ].map(({ quote, name, role, rating }, i) => (
@@ -871,21 +884,19 @@ function HomePage() {
           <div className="grid gap-6 md:grid-cols-12 md:items-start md:gap-12 mb-12">
             <Reveal className="md:col-span-6">
               <p className="eyebrow eyebrow-indigo flex items-center gap-2">
-                <Briefcase className="h-3.5 w-3.5" /> Brands and Products
+                <Briefcase className="h-3.5 w-3.5" /> {cms.ventures?.section_eyebrow || "Brands and Products"}
               </p>
               <h2 className="mt-4 pb-2 font-display text-[2.2rem] font-extrabold leading-[1.1] tracking-[-0.03em] sm:text-4xl md:text-5xl text-ink">
-                I do not only advise. <br className="hidden sm:block" />
-                <span className="font-serif italic font-medium text-gradient-brand">I build.</span>
+                <RichHeading
+                  text={cms.ventures?.section_heading || "I do not only advise.\n*I build.*"}
+                />
               </h2>
             </Reveal>
             <Reveal delay={100} className="md:col-span-6">
               <div className="space-y-2 text-[15px] leading-[1.5] text-ink-soft md:text-base dark:text-white">
                 <p className="dark:text-white">
-                  Building products has taught me lessons that cannot be learned from presentations.
-                </p>
-                <p className="dark:text-white">
-                  You have to understand customers, make difficult choices, work with a team, manage
-                  costs and make the product useful enough for people to keep using it.
+                  {cms.ventures?.section_subheading ||
+                    "Building products has taught me lessons that cannot be learned from presentations. You have to understand customers, make difficult choices, work with a team, manage costs and make the product useful enough for people to keep using it."}
                 </p>
               </div>
             </Reveal>
@@ -895,29 +906,29 @@ function HomePage() {
             {[
               {
                 n: "01 / Product",
-                title: "BDA Technologies",
-                eyebrow: "Business systems & automation",
+                title: cms.ventures?.v1_title || "BDA Technologies",
+                eyebrow: cms.ventures?.v1_eyebrow || "Business systems & automation",
                 color: "to-cyan-500/15",
                 logo: "/logos/bda.png",
-                desc: "BDA Technologies helps founder-led businesses improve reporting, workflows, dashboards, automation and use of AI.",
+                desc: cms.ventures?.v1_desc || "BDA Technologies helps founder-led businesses improve reporting, workflows, dashboards, automation and use of AI.",
                 link: { href: "https://bdatechnologies.com", label: "Visit BDA Technologies" },
               },
               {
                 n: "02 / Product",
-                title: "LinkAssist",
-                eyebrow: "AI support for LinkedIn authority",
+                title: cms.ventures?.v2_title || "LinkAssist",
+                eyebrow: cms.ventures?.v2_eyebrow || "AI support for LinkedIn authority",
                 color: "to-accent-soft/30",
                 logo: "/logos/linkassist.png",
-                desc: "LinkAssist helps professionals find ideas, write stronger LinkedIn content and build authority with more consistency.",
+                desc: cms.ventures?.v2_desc || "LinkAssist helps professionals find ideas, write stronger LinkedIn content and build authority with more consistency.",
                 link: { href: "https://linkassist.ai/", label: "Explore LinkAssist" },
               },
               {
                 n: "03 / Platform",
-                title: "Automation School",
-                eyebrow: "AI Training For Professionals",
+                title: cms.ventures?.v3_title || "Automation School",
+                eyebrow: cms.ventures?.v3_eyebrow || "AI Training For Professionals",
                 color: "to-amber-500/15",
                 logo: "/logos/automation-school.png",
-                desc: "Practical AI training courses and customized corporate programs designed for hands-on operational adoption.",
+                desc: cms.ventures?.v3_desc || "Practical AI training courses and customized corporate programs designed for hands-on operational adoption.",
                 link: { href: "https://automationschool.in/", label: "Explore Automation School" },
               },
             ].map(({ n, title, eyebrow, logo, desc, link }) => (
@@ -976,19 +987,20 @@ function HomePage() {
           <div className="grid gap-6 md:grid-cols-12 md:items-end md:gap-12">
             <Reveal className="md:col-span-7">
               <p className="eyebrow eyebrow-indigo flex items-center gap-2">
-                <FolderOpen className="h-3.5 w-3.5" /> Selected Work
+                <FolderOpen className="h-3.5 w-3.5" /> {cms.stats?.section_eyebrow || "Selected Work"}
               </p>
               <h2 className="mt-4 font-display text-[2.2rem] font-extrabold leading-[1.1] tracking-[-0.03em] sm:text-4xl md:text-5xl">
-                Work across companies,{" "}
-                <span className="font-serif italic font-medium text-gradient-brand">
-                  teams and institutions.
-                </span>
+                <RichHeading
+                  text={
+                    cms.stats?.section_heading ||
+                    "Work across companies, *teams and institutions.*"
+                  }
+                />
               </h2>
             </Reveal>
             <Reveal delay={100} className="md:col-span-5">
               <p className="text-base leading-[1.6] text-ink-soft md:text-lg dark:text-white">
-                I have worked with founders, corporate teams, professional bodies, educational
-                institutions and government organisations.
+                {cms.stats?.section_subheading || "I have worked with founders, corporate teams, professional bodies, educational institutions and government organisations."}
               </p>
             </Reveal>
           </div>
@@ -1038,7 +1050,12 @@ function HomePage() {
           {/* Training/Speaking Stats Strip */}
           <div className="mt-20 md:mt-8">
             <div className="grid gap-6 grid-cols-2 md:grid-cols-4 max-w-5xl mx-auto">
-              {heroStats.map((s, i) => (
+              {[
+                { v: cms.stats?.stat1_value || "5,000+", l: cms.stats?.stat1_label || "Professionals trained", icon: Users },
+                { v: cms.stats?.stat2_value || "150+", l: cms.stats?.stat2_label || "Sessions and engagements", icon: Rocket },
+                { v: cms.stats?.stat3_value || "11+", l: cms.stats?.stat3_label || "Industries delivered in", icon: Building2 },
+                { v: cms.stats?.stat4_value || "9.5/10", l: cms.stats?.stat4_label || "Average session rating", icon: Star },
+              ].map((s, i) => (
                 <Reveal key={s.l} delay={120 + i * 60}>
                   <div className="custom-theme-card-static relative h-full overflow-hidden rounded-[20px] p-4 text-center">
                     <div
@@ -1080,17 +1097,15 @@ function HomePage() {
           <div className="grid gap-12 md:grid-cols-12 md:gap-16">
             <Reveal className="md:col-span-5">
               <p className="eyebrow eyebrow-indigo flex items-center gap-2">
-                <User className="h-3.5 w-3.5" /> About
+                <User className="h-3.5 w-3.5" /> {cms.about?.section_eyebrow || "About"}
               </p>
               <h2 className="mt-4 font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl text-ink">
-                Meet{" "}
-                <span className="font-serif italic font-medium text-gradient-brand">Ambesh.</span>
+                <RichHeading text={cms.about?.section_heading || "Meet *Ambesh.*"} />
               </h2>
             </Reveal>
             <Reveal delay={120} className="md:col-span-7">
               <p className="text-base text-ink leading-relaxed font-semibold">
-                I am Ambesh Tiwari, an AI Trainer, Business Systems Consultant, author and founder
-                of BDA Technologies.
+                {cms.about?.intro || "I am Ambesh Tiwari, an AI Trainer, Business Systems Consultant, author and founder of BDA Technologies."}
               </p>
               <hr className="border-rule my-3" />
               <div className="space-y-3.5 text-[15px] md:text-base leading-[1.6] text-ink-soft">
@@ -1102,7 +1117,7 @@ function HomePage() {
                   className="border-l-2 pl-4 font-serif text-lg md:text-xl italic leading-snug text-ink my-3"
                   style={{ borderColor: "var(--accent)" }}
                 >
-                  &ldquo;They were caused by unclear systems and inconsistent execution.&rdquo;
+                  &ldquo;{cms.about?.quote || "They were caused by unclear systems and inconsistent execution."}&rdquo;
                 </blockquote>
                 <p>This taught me how founders think, how teams work and how businesses grow.</p>
                 <p>I saw the same problem again and again.</p>
@@ -1113,8 +1128,7 @@ function HomePage() {
                 <p>The problem was often not a lack of technology.</p>
                 <p>The problem was the gap between people, process and technology.</p>
                 <p className="text-ink font-semibold">
-                  Today, I help businesses close that gap. I help founders build businesses that are
-                  simpler to run and easier to grow.
+                  {cms.about?.closing || "Today, I help businesses close that gap. I help founders build businesses that are simpler to run and easier to grow."}
                 </p>
               </div>
               <div className="mt-8">
@@ -1136,20 +1150,17 @@ function HomePage() {
       {/* BOOK */}
       <BookStickySection>
         <p className="eyebrow eyebrow-indigo flex items-center gap-2 mb-4">
-          <BookOpen className="h-3.5 w-3.5" /> THE BOOK
+          <BookOpen className="h-3.5 w-3.5" /> {cms.book?.section_eyebrow || "THE BOOK"}
         </p>
         <h2 className="mt-4 font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl text-ink">
-          Accelerate{" "}
-          <span className="font-serif italic font-medium text-gradient-brand">with AI.</span>
+          <RichHeading text={cms.book?.section_heading || "Accelerate *with AI.*"} />
         </h2>
         <p className="mt-3 font-serif text-xl italic text-ink-soft">
-          A simple guide to using AI in business.
+          {cms.book?.section_subheading || "A simple guide to using AI in business."}
         </p>
         <div className="mt-6 max-w-xl text-[15px] md:text-base leading-[1.65] text-ink-soft space-y-4">
           <p>
-            <span className="italic font-medium text-ink">Accelerate with AI</span> helps founders
-            and professionals understand what AI can do and how they can start using it in practical
-            work.
+            {cms.book?.desc || "Accelerate with AI helps founders and professionals understand what AI can do and how they can start using it in practical work."}
           </p>
 
           {/* Key pillars bullets in book section (Desktop Only) */}
@@ -1223,14 +1234,15 @@ function HomePage() {
         <div className="container-edit relative py-16 md:py-24">
           <Reveal>
             <h2 className="max-w-4xl font-display text-4xl font-extrabold leading-[1.1] tracking-[-0.03em] text-white sm:text-5xl md:text-7xl">
-              Ready to Build a Business{" "}
-              <span className="font-serif italic font-medium text-gradient-brand">
-                That Runs Better?
-              </span>
+              <RichHeading
+                text={
+                  cms.cta?.heading || "Ready to Build a Business *That Runs Better?*"
+                }
+              />
             </h2>
             <p className="mt-8 max-w-2xl text-base leading-[1.65] text-white/70 md:text-xl">
-              Let&rsquo;s talk about your business, your goals, and where AI and better systems can
-              create the biggest impact.
+              {cms.cta?.subheading ||
+                "Let's talk about your business, your goals, and where AI and better systems can create the biggest impact."}
             </p>
             <div className="mt-10 flex flex-row items-center gap-1.5 sm:gap-3">
               <Link
@@ -1239,7 +1251,7 @@ function HomePage() {
                 className="btn-premium group inline-flex h-11 flex-1 items-center justify-center gap-1 min-[375px]:gap-1.5 whitespace-nowrap rounded-full px-2 min-[375px]:px-3 text-[11px] min-[360px]:text-xs min-[400px]:text-sm font-semibold text-white transition-all duration-300 sm:h-14 sm:flex-none sm:gap-2 sm:justify-start sm:px-8 sm:text-base"
               >
                 <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
-                  Book a Strategy Call
+                  {cms.cta?.button_text || "Book a Strategy Call"}
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1 sm:h-4 sm:w-4" />
                 </span>
               </Link>
@@ -1270,7 +1282,7 @@ function HomePage() {
               </a>
             </div>
             <p className="mt-5 text-xs text-white/50">
-              Responds within 24 hours. No sales script. Just a real conversation.
+              {cms.cta?.note || "Responds within 24 hours. No sales script. Just a real conversation."}
             </p>
           </Reveal>
         </div>

@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, useMemo, type FormEvent } from "react";
 import {
   ArrowRight,
   Calendar,
@@ -18,20 +17,26 @@ import { Reveal } from "@/components/Reveal";
 import { buildMeta, jsonLd, breadcrumbSchema, faqSchema, SITE_URL } from "@/lib/seo";
 import { whatsappUrl, WA_MESSAGES } from "@/lib/wa";
 import { submitLeadToGHL } from "@/lib/ghl";
+import { usePageContent } from "@/hooks/use-page-content";
+import { EXACT_DEFAULT_CONTACT_CONTENT } from "./admin/pages/contact";
+import { RichHeading } from "@/components/RichHeading";
 
-const faqs = [
+export const faqs = [
   {
-    q: "What happens after submitting the form?",
-    a: "You will get a reply within 24 hours, usually with 2 to 3 calendar slots for a 30-minute discovery call.",
+    q: EXACT_DEFAULT_CONTACT_CONTENT.faqs.q1,
+    a: EXACT_DEFAULT_CONTACT_CONTENT.faqs.a1,
   },
   {
-    q: "Is the discovery call really free?",
-    a: "Yes. The call is free. It is designed to understand your team, not to force a sale.",
+    q: EXACT_DEFAULT_CONTACT_CONTENT.faqs.q2,
+    a: EXACT_DEFAULT_CONTACT_CONTENT.faqs.a2,
   },
-  { q: "Do you sign NDAs before the call?", a: "Yes, if your team requires it." },
   {
-    q: "Can we get a custom proposal?",
-    a: "Yes. After the discovery call, a custom proposal can usually be shared within 72 hours.",
+    q: EXACT_DEFAULT_CONTACT_CONTENT.faqs.q3,
+    a: EXACT_DEFAULT_CONTACT_CONTENT.faqs.a3,
+  },
+  {
+    q: EXACT_DEFAULT_CONTACT_CONTENT.faqs.q4,
+    a: EXACT_DEFAULT_CONTACT_CONTENT.faqs.a4,
   },
 ];
 
@@ -80,12 +85,6 @@ export const Route = createFileRoute("/contact")({
   component: ContactPage,
 });
 
-const stats = [
-  { v: "5,000+", l: "Professionals trained" },
-  { v: "150+", l: "Sessions and engagements" },
-  { v: "9.5", l: "Average NPS score" },
-];
-
 type ServiceKey = "diagnostic" | "training" | "strategy" | "automation";
 const SERVICE_LABELS: Record<ServiceKey, string> = {
   diagnostic: "Business Systems Diagnostic",
@@ -104,6 +103,7 @@ function readQuery() {
 }
 
 function ContactPage() {
+  const cms = usePageContent("contact", EXACT_DEFAULT_CONTACT_CONTENT);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -140,8 +140,6 @@ function ContactPage() {
             ? WA_MESSAGES.automation
             : WA_MESSAGES.contact;
 
-  const submitLeadFn = useServerFn(submitLeadToGHL);
-
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
@@ -152,27 +150,29 @@ function ContactPage() {
     const company = String(data.get("company") || "");
     const designation = String(data.get("designation") || "");
     const teamSize = String(data.get("teamSize") || "");
-    const format = String(data.get("format") || "");
+    const selectedFormat = String(data.get("format") || "");
     const timeline = String(data.get("timeline") || "");
     const challenge = String(data.get("challenge") || "");
 
     try {
-      await submitLeadFn({
-        data: {
-          name,
-          email,
-          company,
-          designation,
-          teamSize,
-          format,
-          timeline,
-          challenge,
-          serviceLabel: isPodcast ? "Podcast guest pitch" : serviceLabel,
-          pageUrl: window.location.href,
-        },
-      });
+      if (typeof submitLeadToGHL === "function") {
+        await submitLeadToGHL({
+          data: {
+            name,
+            email,
+            company,
+            designation,
+            teamSize,
+            format: selectedFormat,
+            timeline,
+            challenge,
+            serviceLabel: isPodcast ? "Podcast guest pitch" : serviceLabel,
+            pageUrl: typeof window !== "undefined" ? window.location.href : "",
+          },
+        });
+      }
     } catch (error) {
-      console.error("GHL sync failed:", error);
+      console.warn("GHL sync notice:", error);
     }
 
     form.reset();
@@ -180,24 +180,30 @@ function ContactPage() {
     setSubmitting(false);
   }
 
-  const heroHeading = isPodcast ? (
-    <>
-      Pitch a conversation{" "}
-      <span className="text-gradient-brand animate-gradient">for the podcast.</span>
-    </>
-  ) : service === "diagnostic" ? (
-    <>
-      Let's diagnose <span className="text-gradient-brand animate-gradient">your business.</span>
-    </>
-  ) : (
-    <>
-      Let's build the system{" "}
-      <span className="text-gradient-brand animate-gradient">your business needs.</span>
-    </>
-  );
-  const heroSub = isPodcast
-    ? "Tell us about you, the story, and why now. If it is a fit, we will set up a recording."
-    : "Free 30-minute Business Systems Diagnostic. No pitch deck. A practical diagnosis of where the business is stuck and what the next 90 days should focus on.";
+  const heroHeadingText = isPodcast
+    ? cms.hero.heading_podcast
+    : service === "diagnostic"
+      ? cms.hero.heading_diagnostic
+      : cms.hero.heading;
+
+  const heroSub = isPodcast ? cms.hero.subheading_podcast : cms.hero.subheading;
+
+  const statsList = useMemo(() => {
+    return [
+      { v: cms.sidebar.stat1_val, l: cms.sidebar.stat1_label },
+      { v: cms.sidebar.stat2_val, l: cms.sidebar.stat2_label },
+      { v: cms.sidebar.stat3_val, l: cms.sidebar.stat3_label },
+    ];
+  }, [cms.sidebar]);
+
+  const faqsList = useMemo(() => {
+    return [
+      { q: cms.faqs.q1, a: cms.faqs.a1 },
+      { q: cms.faqs.q2, a: cms.faqs.a2 },
+      { q: cms.faqs.q3, a: cms.faqs.a3 },
+      { q: cms.faqs.q4, a: cms.faqs.a4 },
+    ].filter((f) => f.q && f.a);
+  }, [cms.faqs]);
 
   return (
     <>
@@ -207,12 +213,12 @@ function ContactPage() {
         <div className="container-edit relative pt-12 pb-16 md:pt-16 md:pb-20">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <Mail className="h-3.5 w-3.5" /> Contact
+              <Mail className="h-3.5 w-3.5" /> {cms.hero.eyebrow}
             </p>
           </Reveal>
           <Reveal delay={100}>
             <h1 className="mt-6 max-w-5xl font-display text-[2.4rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl md:text-6xl lg:text-[4.25rem]">
-              {heroHeading}
+              <RichHeading text={heroHeadingText} />
             </h1>
           </Reveal>
           {serviceLabel && (
@@ -228,13 +234,13 @@ function ContactPage() {
           <Reveal delay={350}>
             <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-ink-muted">
               <span className="inline-flex items-center gap-2">
-                <Clock className="h-4 w-4 text-accent" /> 24-hour response
+                <Clock className="h-4 w-4 text-accent" /> {cms.hero.badge_1}
               </span>
               <span className="inline-flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-accent" /> NDA on request
+                <ShieldCheck className="h-4 w-4 text-accent" /> {cms.hero.badge_2}
               </span>
               <span className="inline-flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-accent" /> Custom proposal in 72 hours
+                <Calendar className="h-4 w-4 text-accent" /> {cms.hero.badge_3}
               </span>
             </div>
           </Reveal>
@@ -255,29 +261,29 @@ function ContactPage() {
                     <Mail className="h-4 w-4 text-accent" />
                   </span>
                   <div>
-                    <h2 className="text-xl font-bold tracking-tight">
-                      {isPodcast ? "Pitch your episode" : "Tell us about your team"}
+                    <h2 className="text-xl font-bold tracking-tight text-ink">
+                      {isPodcast ? cms.form.form_title_podcast : cms.form.form_title}
                     </h2>
                     <p className="text-sm text-ink-muted">
                       {isPodcast
-                        ? "What should we talk about?"
-                        : "The more honest, the more useful the call."}
+                        ? cms.form.form_subtitle_podcast
+                        : cms.form.form_subtitle}
                     </p>
                   </div>
                 </div>
 
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Field label="Your name" name="name" required />
-                  <Field label="Email" name="email" type="email" required />
-                  <Field label="Company" name="company" required />
-                  <Field label="Designation" name="designation" required />
+                  <Field label={cms.form.label_name} name="name" required />
+                  <Field label={cms.form.label_email} name="email" type="email" required />
+                  <Field label={cms.form.label_company} name="company" required />
+                  <Field label={cms.form.label_designation} name="designation" required />
                   <SelectField
-                    label="Team size"
+                    label={cms.form.label_teamsize}
                     name="teamSize"
                     options={["1 to 10", "10 to 50", "50 to 200", "200 to 1,000", "1,000+"]}
                   />
                   <SelectField
-                    label="Preferred format"
+                    label={cms.form.label_format}
                     name="format"
                     value={format}
                     onChange={setFormat}
@@ -290,7 +296,7 @@ function ContactPage() {
                     ]}
                   />
                   <SelectField
-                    label="Timeline"
+                    label={cms.form.label_timeline}
                     name="timeline"
                     options={["This month", "Next 60 days", "Next quarter", "Exploring"]}
                   />
@@ -299,8 +305,8 @@ function ContactPage() {
                 <div className="mt-6">
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-ink-muted font-mono-label">
                     {isPodcast
-                      ? "What is the core topic, story, or lesson you want to share?"
-                      : "Where is your team losing the most time right now?"}
+                      ? cms.form.label_challenge_podcast
+                      : cms.form.label_challenge}
                   </label>
                   <textarea
                     name="challenge"
@@ -308,24 +314,24 @@ function ContactPage() {
                     required
                     placeholder={
                       isPodcast
-                        ? "Please share a brief summary of what you would like to talk about and any background context."
-                        : "Reporting, follow-ups, research, documentation, content, internal coordination, decision-making, or something else."
+                        ? cms.form.placeholder_challenge_podcast
+                        : cms.form.placeholder_challenge
                     }
-                    className="w-full rounded-xl border border-rule bg-canvas px-4 py-3 text-base transition-all focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
+                    className="w-full rounded-xl border border-rule bg-canvas px-4 py-3 text-base text-ink transition-all focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="btn-premium group mt-8 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-semibold disabled:opacity-60"
+                  className="btn-premium group mt-8 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full text-base font-semibold disabled:opacity-60 text-white"
                 >
-                  {submitting ? "Sending..." : "Send inquiry"}
+                  {submitting ? "Sending..." : cms.form.submit_btn_text}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </button>
 
                 <p className="mt-4 text-center text-xs text-ink-muted">
-                  We respond within 24 hours. NDA available on request.
+                  {cms.form.bottom_note}
                 </p>
               </form>
             </Reveal>
@@ -336,11 +342,11 @@ function ContactPage() {
                   <div className="absolute inset-0 opacity-30 bg-gradient-brand" aria-hidden />
                   <div className="relative">
                     <Sparkles className="h-6 w-6 text-canvas/90" />
-                    <h3 className="mt-4 text-2xl font-extrabold tracking-tight">
-                      Why teams pick Ambesh
+                    <h3 className="mt-4 text-2xl font-extrabold tracking-tight text-white">
+                      {cms.sidebar.sidebar_stat_heading}
                     </h3>
                     <ul className="mt-6 space-y-4">
-                      {stats.map((x) => (
+                      {statsList.map((x) => (
                         <li
                           key={x.l}
                           className="flex items-baseline justify-between border-b border-canvas/10 pb-3 last:border-0"
@@ -357,28 +363,31 @@ function ContactPage() {
 
                 <div className="rounded-3xl border border-rule bg-canvas p-7 shadow-soft">
                   <p className="eyebrow flex items-center gap-2">
-                    <ShieldCheck className="h-3.5 w-3.5" /> Trust signals
+                    <ShieldCheck className="h-3.5 w-3.5" /> {cms.sidebar.trust_eyebrow}
                   </p>
-                  <h3 className="mt-2 text-lg font-bold tracking-tight">What you can expect</h3>
-                  <ul className="mt-5 space-y-4 text-sm">
+                  <h3 className="mt-2 text-lg font-bold tracking-tight text-ink">
+                    {cms.sidebar.trust_title}
+                  </h3>
+                  <ul className="mt-5 space-y-4 text-sm text-ink-soft">
                     <li className="flex items-start gap-3">
                       <Clock className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
                       <span>
-                        <span className="font-semibold">24-hour response</span>, including weekends.
+                        <span className="font-semibold text-ink">{cms.sidebar.trust1_title}</span>
+                        {cms.sidebar.trust1_desc}
                       </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
                       <span>
-                        <span className="font-semibold">NDA available</span> on request, before the
-                        first call.
+                        <span className="font-semibold text-ink">{cms.sidebar.trust2_title}</span>
+                        {cms.sidebar.trust2_desc}
                       </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
                       <span>
-                        <span className="font-semibold">Custom proposal</span> in 72 hours after
-                        discovery.
+                        <span className="font-semibold text-ink">{cms.sidebar.trust3_title}</span>
+                        {cms.sidebar.trust3_desc}
                       </span>
                     </li>
                   </ul>
@@ -389,14 +398,14 @@ function ContactPage() {
                     className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
                   >
                     <MessageCircle className="h-4 w-4" />
-                    Prefer WhatsApp? Message Ambesh
+                    {cms.sidebar.whatsapp_btn_text}
                   </a>
                   <a
-                    href="mailto:hello@ambesh.com"
+                    href={`mailto:${cms.sidebar.email_address || "hello@ambesh.com"}`}
                     className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-rule bg-sand px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink/40 hover:bg-sand-deep"
                   >
                     <Mail className="h-4 w-4" />
-                    Or email hello@ambesh.com
+                    {cms.sidebar.email_btn_text}
                   </a>
                 </div>
               </div>
@@ -411,31 +420,24 @@ function ContactPage() {
         <div className="container-edit relative grid gap-12 md:grid-cols-12 md:gap-16">
           <Reveal className="md:col-span-4">
             <p className="eyebrow flex items-center gap-2">
-              <MessageCircle className="h-3.5 w-3.5" /> FAQ
+              <MessageCircle className="h-3.5 w-3.5" /> {cms.faqs.eyebrow}
             </p>
-            <h2 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-tighter md:text-5xl">
-              Quick <span className="text-gradient-brand">answers.</span>
+            <h2 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-tighter md:text-5xl text-ink">
+              <RichHeading text={cms.faqs.heading} />
             </h2>
             <p className="mt-5 text-base text-ink-muted">
-              Still have questions? Email{" "}
-              <a
-                href="mailto:hello@ambesh.com"
-                className="font-semibold text-ink underline-offset-4 hover:underline"
-              >
-                hello@ambesh.com
-              </a>
-              .
+              {cms.faqs.subheading}
             </p>
           </Reveal>
           <div className="md:col-span-8">
             <ul className="divide-y divide-rule border-y border-rule">
-              {faqs.map((f, i) => (
-                <li key={f.q}>
+              {faqsList.map((f, i) => (
+                <li key={`${f.q}-${i}`}>
                   <button
                     onClick={() => setOpenFaq(openFaq === i ? null : i)}
                     className="flex w-full items-center justify-between gap-4 py-6 text-left transition-colors hover:text-accent"
                   >
-                    <span className="text-lg font-semibold md:text-xl">{f.q}</span>
+                    <span className="text-lg font-semibold md:text-xl text-ink">{f.q}</span>
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rule bg-canvas">
                       {openFaq === i ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                     </span>
@@ -476,10 +478,11 @@ function ContactPage() {
             <div className="icon-box mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-rule">
               <CheckCircle2 className="h-8 w-8 text-accent" />
             </div>
-            <h3 className="mt-5 text-2xl font-extrabold tracking-tight">Inquiry sent!</h3>
+            <h3 className="mt-5 text-2xl font-extrabold tracking-tight text-ink">
+              {cms.modal.modal_title}
+            </h3>
             <p className="mt-3 text-base text-ink-muted">
-              ✅ Thank you! Your inquiry has been submitted successfully. We'll get in touch with
-              you shortly.
+              {cms.modal.modal_desc}
             </p>
             <div className="mt-7 flex flex-col gap-3">
               <a
@@ -489,13 +492,13 @@ function ContactPage() {
                 className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] text-sm font-semibold text-white transition hover:opacity-90"
               >
                 <MessageCircle className="h-4 w-4" />
-                Message on WhatsApp
+                {cms.modal.modal_wa_btn}
               </a>
               <button
                 onClick={() => setShowSuccessModal(false)}
                 className="text-sm font-semibold text-ink-muted transition hover:text-ink"
               >
-                Close
+                {cms.modal.modal_close_btn}
               </button>
             </div>
           </div>
@@ -525,7 +528,7 @@ function Field({
         type={type}
         name={name}
         required={required}
-        className="h-12 w-full rounded-xl border border-rule bg-canvas px-4 text-base transition-all focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
+        className="h-12 w-full rounded-xl border border-rule bg-canvas px-4 text-base text-ink transition-all focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
       />
     </div>
   );
@@ -554,7 +557,7 @@ function SelectField({
         required
         value={value}
         onChange={onChange ? (e) => onChange(e.target.value) : undefined}
-        className="h-12 w-full rounded-xl border border-rule bg-canvas px-4 text-base transition-all focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
+        className="h-12 w-full rounded-xl border border-rule bg-canvas px-4 text-base text-ink transition-all focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent/15"
       >
         <option value="">Select...</option>
         {options.map((o) => (

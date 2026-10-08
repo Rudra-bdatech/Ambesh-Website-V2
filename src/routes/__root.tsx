@@ -292,6 +292,16 @@ function RootComponent() {
     };
   }, []);
 
+  const isAdminRoute = location.pathname.startsWith("/admin");
+
+  if (isAdminRoute) {
+    return (
+      <div className="admin-root min-h-screen bg-[#050d1a] text-white">
+        <Outlet />
+      </div>
+    );
+  }
+
   return (
     <div className="app-shell relative flex min-h-screen flex-col bg-canvas text-ink">
       <AnimatePresence>

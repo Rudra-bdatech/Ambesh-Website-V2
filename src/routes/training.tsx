@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo } from "react";
 import {
   ArrowRight,
   Building2,
@@ -20,6 +21,9 @@ import { buildMeta, jsonLd, breadcrumbSchema, SITE_URL } from "@/lib/seo";
 import { whatsappUrl, WA_MESSAGES } from "@/lib/wa";
 import { GridVignetteBackground } from "@/components/ui/vignette-grid-background";
 import { ParticleField } from "@/components/ParticleField";
+import { usePageContent } from "@/hooks/use-page-content";
+import { EXACT_DEFAULT_TRAINING_CONTENT } from "./admin/pages/training";
+import { RichHeading } from "@/components/RichHeading";
 
 export const Route = createFileRoute("/training")({
   head: () => {
@@ -55,136 +59,145 @@ export const Route = createFileRoute("/training")({
   component: TrainingPage,
 });
 
-const heroStats = [
-  {
-    end: 5000,
-    suffix: "+",
-    l: "Professionals trained",
-    icon: Users,
-  },
-  {
-    end: 50,
-    suffix: "+",
-    l: "Organisations served",
-    icon: Building2,
-  },
-  {
-    end: 150,
-    suffix: "+",
-    l: "Sessions and engagements",
-    icon: Rocket,
-  },
-  {
-    end: 11,
-    suffix: "+",
-    l: "Industries delivered in",
-    icon: Layers,
-  },
-  {
-    end: 9.5,
-    suffix: "",
-    decimals: 1,
-    l: "Average NPS rating",
-    icon: Star,
-  },
-];
-
-const formats = [
-  {
-    title: "Leadership AI Workshop",
-    tagline: "For CXOs, founders and senior teams.",
-    body: "A focused session that gives leadership direction, risk clarity, and a 90-day view of where AI fits in the business.",
-    bullets: [
-      "Half-day or full-day format",
-      "Leadership only, decision-focused",
-      "AI opportunity and risk framing",
-      "Leaves with a 90-day adoption view",
-    ],
-  },
-  {
-    title: "Department AI Workshop",
-    tagline: "For sales, marketing, HR, operations, finance and support teams.",
-    body: "Practical workshops that put AI inside the daily work of a specific department. Participants practise on their own tasks.",
-    bullets: [
-      "Built around the department's real workflows",
-      "Live practice on actual tools and tasks",
-      "Department-specific use cases",
-      "Post-session resource kit",
-    ],
-  },
-  {
-    title: "AI Workflow Bootcamp",
-    tagline: "For teams that need deeper hands-on practice.",
-    body: "A longer engagement covering prompts, workflows, automation and internal use cases your team will keep using.",
-    bullets: [
-      "Multi-day, hands-on format",
-      "Prompts, workflows and automation depth",
-      "Internal use cases built during the session",
-      "Optional roadmap for next steps",
-    ],
-  },
-];
-
-const engagements = [
-  {
-    name: "Landmark Group",
-    location: "Dubai",
-    format: "Corporate AI and automation training",
-    tag: "Retail",
-  },
-  {
-    name: "ICSI",
-    location: "Delhi",
-    format: "AI session for CS professionals",
-    tag: "Professional body",
-  },
-  {
-    name: "Ministry of Finance",
-    location: "Dar es Salaam, Tanzania",
-    format: "Government AI adoption program",
-    tag: "Government",
-  },
-];
-
-const outcomes = [
-  "AI workflows for their actual work",
-  "Better prompts for research, writing, analysis and decision-making",
-  "Clarity on where AI helps and where it does not",
-  "Practical use cases for their department",
-  "Resource kit for continued practice",
-  "Optional roadmap for deeper automation",
-];
-
-const themes = [
-  {
-    quote: "It was practical, not theoretical.",
-    body: "Participants repeatedly note that the session focused on their real work rather than generic demos. The strongest sessions are the ones where people leave having already used AI on something they care about.",
-  },
-  {
-    quote: "Everyone in the room could follow along.",
-    body: "Sponsors often comment on the range of participants, from nervous first-time users to confident early adopters, and how both groups leave engaged. The training is designed for mixed-skill rooms.",
-  },
-  {
-    quote: "We left with things we could use immediately.",
-    body: "The most common pattern after a session is teams applying specific prompts, workflows or tools within the first week. Whether that adoption sticks depends on leadership follow through, which is why a strategy sprint exists alongside training.",
-  },
-];
-
-const industries = [
-  "Fintech",
-  "SaaS",
-  "Manufacturing",
-  "Retail",
-  "FMCG",
-  "Edtech",
-  "Logistics",
-  "Real estate",
-  "Legal",
-  "Consulting",
-  "Media",
-];
+function parseStat(
+  rawVal: string,
+  defaultEnd: number,
+  defaultPrefix: string,
+  defaultSuffix: string,
+  defaultDecimals: number
+) {
+  if (!rawVal) {
+    return {
+      end: defaultEnd,
+      prefix: defaultPrefix,
+      suffix: defaultSuffix,
+      decimals: defaultDecimals,
+      isCustomText: false,
+      rawText: "",
+    };
+  }
+  const numMatch = rawVal.match(/^([^0-9.]*)([0-9]+(?:\.[0-9]+)?)(.*)$/);
+  if (numMatch) {
+    const prefix = numMatch[1] || "";
+    const end = parseFloat(numMatch[2]);
+    const suffix = numMatch[3] || "";
+    const decimals = numMatch[2].includes(".") ? numMatch[2].split(".")[1].length : 0;
+    return { end, prefix, suffix, decimals, isCustomText: false, rawText: rawVal };
+  }
+  return { end: defaultEnd, prefix: "", suffix: "", decimals: 0, isCustomText: true, rawText: rawVal };
+}
 
 function TrainingPage() {
+  const cms = usePageContent("training", EXACT_DEFAULT_TRAINING_CONTENT);
+
+  // Dynamic Hero Stats
+  const heroStatsList = useMemo(() => {
+    const s1 = parseStat(cms.hero.stat1_val, 5000, "", "+", 0);
+    const s2 = parseStat(cms.hero.stat2_val, 50, "", "+", 0);
+    const s3 = parseStat(cms.hero.stat3_val, 150, "", "+", 0);
+    const s4 = parseStat(cms.hero.stat4_val, 11, "", "+", 0);
+    const s5 = parseStat(cms.hero.stat5_val, 9.5, "", "", 1);
+
+    return [
+      { ...s1, l: cms.hero.stat1_label, icon: Users },
+      { ...s2, l: cms.hero.stat2_label, icon: Building2 },
+      { ...s3, l: cms.hero.stat3_label, icon: Rocket },
+      { ...s4, l: cms.hero.stat4_label, icon: Layers },
+      { ...s5, l: cms.hero.stat5_label, icon: Star },
+    ];
+  }, [cms.hero]);
+
+  // Dynamic Formats
+  const formatsList = useMemo(() => {
+    return [
+      {
+        title: cms.formats.f1_title,
+        tagline: cms.formats.f1_tagline,
+        body: cms.formats.f1_body,
+        bullets: [
+          cms.formats.f1_point1,
+          cms.formats.f1_point2,
+          cms.formats.f1_point3,
+          cms.formats.f1_point4,
+        ].filter(Boolean),
+      },
+      {
+        title: cms.formats.f2_title,
+        tagline: cms.formats.f2_tagline,
+        body: cms.formats.f2_body,
+        bullets: [
+          cms.formats.f2_point1,
+          cms.formats.f2_point2,
+          cms.formats.f2_point3,
+          cms.formats.f2_point4,
+        ].filter(Boolean),
+      },
+      {
+        title: cms.formats.f3_title,
+        tagline: cms.formats.f3_tagline,
+        body: cms.formats.f3_body,
+        bullets: [
+          cms.formats.f3_point1,
+          cms.formats.f3_point2,
+          cms.formats.f3_point3,
+          cms.formats.f3_point4,
+        ].filter(Boolean),
+      },
+    ];
+  }, [cms.formats]);
+
+  // Dynamic Engagements
+  const engagementsList = useMemo(() => {
+    return [
+      {
+        name: cms.engagements.e1_name,
+        location: cms.engagements.e1_location,
+        format: cms.engagements.e1_format,
+        tag: cms.engagements.e1_tag,
+      },
+      {
+        name: cms.engagements.e2_name,
+        location: cms.engagements.e2_location,
+        format: cms.engagements.e2_format,
+        tag: cms.engagements.e2_tag,
+      },
+      {
+        name: cms.engagements.e3_name,
+        location: cms.engagements.e3_location,
+        format: cms.engagements.e3_format,
+        tag: cms.engagements.e3_tag,
+      },
+    ];
+  }, [cms.engagements]);
+
+  // Dynamic Outcomes
+  const outcomesList = useMemo(() => {
+    return [
+      cms.outcomes.outcome_1,
+      cms.outcomes.outcome_2,
+      cms.outcomes.outcome_3,
+      cms.outcomes.outcome_4,
+      cms.outcomes.outcome_5,
+      cms.outcomes.outcome_6,
+    ].filter(Boolean);
+  }, [cms.outcomes]);
+
+  // Dynamic Themes
+  const themesList = useMemo(() => {
+    return [
+      { quote: cms.themes.t1_quote, body: cms.themes.t1_body },
+      { quote: cms.themes.t2_quote, body: cms.themes.t2_body },
+      { quote: cms.themes.t3_quote, body: cms.themes.t3_body },
+    ];
+  }, [cms.themes]);
+
+  // Dynamic Industries
+  const industriesList = useMemo(() => {
+    return cms.industries.list
+      ? cms.industries.list.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+  }, [cms.industries.list]);
+
   return (
     <div className="relative w-full bg-canvas min-h-screen" style={{ backgroundImage: "none" }}>
       {/* HERO */}
@@ -202,21 +215,17 @@ function TrainingPage() {
         <div className="container-edit relative pt-10 pb-20 md:pt-14 md:pb-24">
           <Reveal eager>
             <p className="eyebrow eyebrow-orange flex items-center gap-2">
-              <GraduationCap className="h-3.5 w-3.5" /> Training
+              <GraduationCap className="h-3.5 w-3.5" /> {cms.hero.eyebrow}
             </p>
           </Reveal>
           <Reveal delay={80} eager>
             <h1 className="mt-5 max-w-4xl font-display text-[2.4rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-ink dark:text-white sm:text-5xl md:text-6xl lg:text-[4rem]">
-              Corporate AI training that turns{" "}
-              <span className="font-serif italic font-medium text-gradient-brand animate-gradient">
-                confusion into daily use.
-              </span>
+              <RichHeading text={cms.hero.heading} />
             </h1>
           </Reveal>
           <Reveal delay={150} eager>
             <p className="mt-6 max-w-2xl text-lg leading-[1.6] text-ink-soft md:text-xl">
-              Hands-on AI workshops for leadership teams, departments and professionals who need to
-              use AI inside real work, not just hear about it.
+              {cms.hero.subheading}
             </p>
           </Reveal>
           <Reveal delay={220} eager>
@@ -227,7 +236,7 @@ function TrainingPage() {
                 className="btn-premium inline-flex h-12 items-center justify-center rounded-full px-2 min-[360px]:px-4 md:px-6 text-[9.5px] min-[340px]:text-[10px] min-[360px]:text-[11px] min-[390px]:text-xs sm:text-sm md:text-[15px] font-semibold whitespace-nowrap w-full sm:w-auto"
               >
                 <span className="relative z-10 flex items-center gap-1 min-[360px]:gap-2">
-                  Book a Strategy Call
+                  {cms.hero.primary_btn_text}
                   <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                 </span>
               </Link>
@@ -235,13 +244,13 @@ function TrainingPage() {
                 href="#formats"
                 className="inline-flex h-12 items-center justify-center rounded-full border border-ink/15 bg-canvas/80 px-2 min-[360px]:px-4 md:px-6 text-[9.5px] min-[340px]:text-[10px] min-[360px]:text-[11px] min-[390px]:text-xs sm:text-sm md:text-[15px] font-semibold text-ink backdrop-blur transition-all hover:border-ink/40 hover:bg-canvas whitespace-nowrap w-full sm:w-auto"
               >
-                View Training Formats
+                {cms.hero.secondary_btn_text}
               </a>
             </div>
           </Reveal>
           <div className="mt-14 grid gap-6 grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-5">
-            {heroStats.map((s, i) => (
-              <Reveal key={s.l} delay={60 + i * 60} eager>
+            {heroStatsList.map((s, i) => (
+              <Reveal key={`${s.l}-${i}`} delay={60 + i * 60} eager>
                 <div className="custom-theme-card-static relative h-full overflow-hidden rounded-[20px] p-4 text-center">
                   <div
                     className="stat-aurora pointer-events-none absolute inset-0 opacity-50"
@@ -252,7 +261,11 @@ function TrainingPage() {
                       <s.icon className="h-3.5 w-3.5" />
                     </div>
                     <p className="stats-value font-display text-2xl font-extrabold tracking-tight text-gradient-brand animate-gradient md:text-3xl">
-                      <AnimatedCounter end={s.end} suffix={s.suffix} decimals={s.decimals ?? 0} />
+                      {s.isCustomText ? (
+                        s.rawText
+                      ) : (
+                        <AnimatedCounter end={s.end} prefix={s.prefix} suffix={s.suffix} decimals={s.decimals ?? 0} />
+                      )}
                     </p>
                   </div>
                   <p className="stats-label relative mt-2 text-xs uppercase tracking-wider font-semibold text-ink-muted leading-tight">
@@ -271,24 +284,20 @@ function TrainingPage() {
           <div className="grid gap-12 md:grid-cols-12 md:items-end">
             <Reveal className="md:col-span-7">
               <p className="eyebrow flex items-center gap-2">
-                <Users className="h-3.5 w-3.5" /> Formats
+                <Users className="h-3.5 w-3.5" /> {cms.formats.eyebrow}
               </p>
-              <h2 className="mt-4 font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl">
-                Three training formats.{" "}
-                <span className="font-serif italic font-medium text-gradient-brand animate-gradient">
-                  One practical method.
-                </span>
+              <h2 className="mt-4 font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl text-ink">
+                <RichHeading text={cms.formats.heading} />
               </h2>
             </Reveal>
             <Reveal delay={100} className="md:col-span-5">
               <p className="text-lg text-ink-soft">
-                Every engagement is shaped to the team in the room, but all of them follow the same
-                principle: people must leave using AI, not just hearing about it.
+                {cms.formats.subheading}
               </p>
             </Reveal>
           </div>
           <div className="mt-16 grid gap-6 lg:grid-cols-3">
-            {formats.map((p, i) => {
+            {formatsList.map((p, i) => {
               return (
                 <Reveal key={p.title} delay={100}>
                   <div className="custom-theme-card group relative flex h-full flex-col overflow-hidden rounded-2xl p-8">
@@ -338,18 +347,15 @@ function TrainingPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <Star className="h-3.5 w-3.5" /> Named engagements
+              <Star className="h-3.5 w-3.5" /> {cms.engagements.eyebrow}
             </p>
-            <h2 className="mt-4 max-w-3xl font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl">
-              Recognisable rooms.{" "}
-              <span className="font-serif italic font-medium text-gradient-brand animate-gradient">
-                Real teams.
-              </span>
+            <h2 className="mt-4 max-w-3xl font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl text-ink">
+              <RichHeading text={cms.engagements.heading} />
             </h2>
           </Reveal>
 
           <div className="mt-14 grid gap-6 md:grid-cols-3">
-            {engagements.map((e) => (
+            {engagementsList.map((e) => (
               <Reveal key={e.name}>
                 <article className="custom-theme-card group flex h-full flex-col rounded-2xl p-7">
                   <span className="inline-flex w-fit items-center rounded-full border border-rule bg-sand px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.22em] text-ink-soft">
@@ -377,17 +383,14 @@ function TrainingPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <CheckCircle2 className="h-3.5 w-3.5" /> After the training
+              <CheckCircle2 className="h-3.5 w-3.5" /> {cms.outcomes.eyebrow}
             </p>
-            <h2 className="mt-4 max-w-3xl font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl">
-              Your team should leave with{" "}
-              <span className="font-serif italic font-medium text-gradient-brand animate-gradient">
-                things they can use.
-              </span>
+            <h2 className="mt-4 max-w-3xl font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl text-ink">
+              <RichHeading text={cms.outcomes.heading} />
             </h2>
           </Reveal>
           <div className="mt-12 grid gap-3 md:grid-cols-2">
-            {outcomes.map((o, i) => (
+            {outcomesList.map((o) => (
               <Reveal key={o} delay={60}>
                 <div className="custom-theme-card-static flex items-start gap-4 rounded-2xl p-5">
                   <span className="problem-tick mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-brand text-white">
@@ -416,18 +419,15 @@ function TrainingPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <Sparkles className="h-3.5 w-3.5" /> Feedback
+              <Sparkles className="h-3.5 w-3.5" /> {cms.themes.eyebrow}
             </p>
-            <h2 className="mt-4 max-w-3xl font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl">
-              The feedback teams share,{" "}
-              <span className="font-serif italic font-medium text-gradient-brand animate-gradient">
-                session after session.
-              </span>
+            <h2 className="mt-4 max-w-3xl font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl text-ink">
+              <RichHeading text={cms.themes.heading} />
             </h2>
           </Reveal>
 
           <div className="mt-14 grid gap-6 md:grid-cols-3">
-            {themes.map((t) => (
+            {themesList.map((t) => (
               <Reveal key={t.quote}>
                 <figure className="custom-theme-card-static flex h-full flex-col rounded-2xl p-7">
                   <blockquote className="font-serif text-xl italic leading-snug text-ink">
@@ -445,8 +445,7 @@ function TrainingPage() {
             <div className="mt-12 flex items-center justify-center gap-2 text-sm text-ink-muted">
               <Star className="h-4 w-4" style={{ fill: "var(--accent)", color: "var(--accent)" }} />
               <span>
-                Average NPS rating <span className="font-semibold text-ink">9.5</span> across 150+
-                sessions and engagements.
+                {cms.themes.footer_nps}
               </span>
             </div>
           </Reveal>
@@ -458,18 +457,15 @@ function TrainingPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <MapPin className="h-3.5 w-3.5" /> Industries served
+              <MapPin className="h-3.5 w-3.5" /> {cms.industries.eyebrow}
             </p>
-            <h2 className="mt-4 max-w-3xl font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl">
-              11 industries.{" "}
-              <span className="font-serif italic font-medium text-gradient-brand animate-gradient">
-                One playbook.
-              </span>
+            <h2 className="mt-4 max-w-3xl font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl text-ink">
+              <RichHeading text={cms.industries.heading} />
             </h2>
           </Reveal>
           <Reveal>
             <div className="mt-12 flex flex-wrap gap-2.5">
-              {industries.map((i) => (
+              {industriesList.map((i) => (
                 <span
                   key={i}
                   className="inline-flex items-center rounded-full border border-rule bg-canvas px-5 py-2.5 text-sm font-medium text-ink transition-all hover:-translate-y-0.5 hover:border-ink hover:shadow-sm"
@@ -518,17 +514,13 @@ function TrainingPage() {
           <Reveal>
             <p className="font-mono text-[0.7rem] uppercase tracking-[0.25em] text-white/50">
               <Sparkles className="mr-2 inline h-3 w-3" />
-              Bring training to your team
+              {cms.cta.eyebrow}
             </p>
             <h2 className="mt-6 max-w-4xl font-display text-5xl font-extrabold leading-[1.02] tracking-[-0.03em] text-white md:text-7xl">
-              Bring practical AI training{" "}
-              <span className="font-serif italic font-medium text-gradient-brand">
-                to your team.
-              </span>
+              <RichHeading text={cms.cta.heading} />
             </h2>
             <p className="mt-8 max-w-2xl text-lg leading-[1.6] text-white/70 md:text-xl">
-              Share your team size, department and goal. We will suggest the right format after a
-              short discovery call.
+              {cms.cta.subheading}
             </p>
             <div className="mt-10 flex flex-row items-center gap-1.5 sm:gap-3">
               <Link
@@ -537,7 +529,7 @@ function TrainingPage() {
                 className="btn-premium group inline-flex h-11 flex-1 items-center justify-center gap-1 min-[375px]:gap-1.5 whitespace-nowrap rounded-full px-2 min-[375px]:px-3 text-[11px] min-[360px]:text-xs min-[400px]:text-sm font-semibold text-white transition-all duration-300 sm:h-14 sm:flex-none sm:gap-2 sm:justify-start sm:px-8 sm:text-base"
               >
                 <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
-                  Request a Training
+                  {cms.cta.btn_text}
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1 sm:h-4 sm:w-4" />
                 </span>
               </Link>
@@ -559,9 +551,9 @@ function TrainingPage() {
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
                   </svg>
                 </span>
-                <span className="sm:hidden">WhatsApp Ambesh</span>
+                <span className="sm:hidden">{cms.cta.wa_btn_text}</span>
                 <TypeLine
-                  text="WhatsApp Ambesh"
+                  text={cms.cta.wa_btn_text}
                   loop
                   className="hidden whitespace-nowrap sm:block sm:min-w-[16ch]"
                 />

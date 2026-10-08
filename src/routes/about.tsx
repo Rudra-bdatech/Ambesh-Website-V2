@@ -22,6 +22,9 @@ import { ParticleField } from "@/components/ParticleField";
 import { BeliefLogo } from "@/components/BeliefLogos";
 import { buildMeta, jsonLd, personSchema, breadcrumbSchema } from "@/lib/seo";
 import { GridVignetteBackground } from "@/components/ui/vignette-grid-background";
+import { usePageContent } from "@/hooks/use-page-content";
+import { EXACT_DEFAULT_ABOUT_CONTENT } from "./admin/pages/about";
+import { RichHeading } from "@/components/RichHeading";
 
 export const Route = createFileRoute("/about")({
   head: () => {
@@ -51,183 +54,9 @@ export const Route = createFileRoute("/about")({
   component: AboutPage,
 });
 
-const hiredFor = [
-  {
-    icon: GraduationCap,
-    label: "01",
-    title: "AI Training & Workshops",
-    body: "Hands-on, department-specific training programs designed to turn technology confusion into immediate daily usage. Built around your team's real workflows and actual tasks.",
-  },
-  {
-    icon: Compass,
-    label: "02",
-    title: "Workflow & Systems Strategy",
-    body: "Designing the operating cadence, documenting SOPs, and building management tracking systems so operations run smoothly without founder bottlenecks.",
-  },
-  {
-    icon: Wrench,
-    label: "03",
-    title: "Custom AI & Automation Install",
-    body: "Building lean, custom AI integrations and automation flows - supported by BDA Technologies - to eliminate repetitive manual work across departments.",
-  },
-];
-
-const beliefs = [
-  {
-    n: "01",
-    h: "AI needs a process, not just tools.",
-    b: "An LLM is only as good as the workflow it sits in. If the process is broken, AI just makes mistakes faster.",
-  },
-  {
-    n: "02",
-    h: "Founders should not be the operating system.",
-    b: "A business scales when decisions, guidelines and reviews are documented and owned by the team, not trapped in the founder's head.",
-  },
-  {
-    n: "03",
-    h: "Lean technology stacks beat complex ones.",
-    b: "Most companies do not need expensive new enterprise software. They need their existing tools connected with simple, smart automation.",
-  },
-  {
-    n: "04",
-    h: "Adoption happens inside real work.",
-    b: "Training is useless if the team does not apply it to their actual tasks in the first week. Every workshop must be built around live projects.",
-  },
-];
-
-const roles = [
-  {
-    icon: Building2,
-    label: "01",
-    title: "Entrepreneur",
-    body: "Founded BDA Technologies in 2017. Eight years of building a company, managing clients, growing revenue, making mistakes and learning from them. Everything Ambesh teaches about business comes from having done it.",
-  },
-  {
-    icon: Wrench,
-    label: "02",
-    title: "Builder",
-    body: "Shipped three AI-native products in the last year: LinkAssist (LinkedIn authority), HireAssist (recruitment AI), and TaskAssist (productivity AI). All built with the same tools and approach he teaches in workshops.",
-  },
-  {
-    icon: BookOpen,
-    label: "03",
-    title: "Teacher",
-    body: "Author of Accelerate with AI. Host of Inspire with Ambesh (30+ episodes). Founder of Automation School. Trained 5,000+ professionals across 50+ organisations in 11 industries.",
-  },
-];
-
-const journey = [
-  {
-    year: "Small Town",
-    t: "Where it started",
-    d: "Grew up in a middle-class family. Curious, restless, never quite fit the mould. Tried joining the Indian Army. Did not make it. Kept the discipline.",
-  },
-  {
-    year: "Engineering + MBA",
-    t: "Building the foundation",
-    d: "BTech in Electronics and Telecommunication (BPUT, Odisha). MBA in International Marketing (Symbiosis, Pune). Brand Management from the University of London.",
-  },
-  {
-    year: "Zen Technologies",
-    t: "First corporate chapter",
-    d: "Three promotions in three years. Trained defence and police teams on simulators. Discovered a talent for business development. Resigned to build something of his own.",
-  },
-  {
-    year: "2017",
-    t: "BDA Technologies",
-    d: "Founded Building Digital Arena in Delhi. A growth and digital transformation agency. StartupIndia recognised. Google, Meta and Shopify partnerships.",
-  },
-  {
-    year: "2023",
-    t: "AI pivot",
-    d: "Built a working tool with AI in two minutes. Realised what had just changed. Shifted entirely to AI training and product development.",
-  },
-  {
-    year: "2023",
-    t: "Automation School",
-    d: "Launched an online learning platform for professionals building AI and automation skills.",
-  },
-  {
-    year: "2024",
-    t: "Book + Podcast",
-    d: "Published Accelerate with AI. Launched Inspire with Ambesh. 30+ podcast episodes with founders and operators.",
-  },
-  {
-    year: "2025",
-    t: "Products + International",
-    d: "Shipped LinkAssist, HireAssist, TaskAssist. Delivered training at Landmark Group (Dubai), ISB (Hyderabad), Ministry of Finance (Tanzania).",
-  },
-];
-
-const builds = [
-  {
-    name: "BDA Technologies",
-    year: "2017",
-    desc: "AI transformation and growth agency. The home base.",
-    link: "bdatechnologies.com",
-    href: "https://bdatechnologies.com",
-  },
-  {
-    name: "Automation School",
-    year: "2023",
-    desc: "Online learning for professionals. Structured courses on AI and automation.",
-    link: "automationschool.in",
-    href: "https://automationschool.in",
-  },
-  {
-    name: "LinkAssist",
-    year: "2025",
-    desc: "AI-powered LinkedIn authority building.",
-    link: "linkassist.ai",
-    href: "https://linkassist.ai",
-  },
-  {
-    name: "HireAssist",
-    year: "2025",
-    desc: "AI assistant for recruitment workflows.",
-    link: "hireassist.org",
-    href: "https://hireassist.org",
-  },
-  {
-    name: "TaskAssist",
-    year: "2025",
-    desc: "AI productivity tool for overwhelmed professionals.",
-    link: "Coming soon",
-    href: "#",
-  },
-  {
-    name: "BDA OS",
-    year: "2026",
-    desc: "An AI-powered business operating system designed to streamline workflows, automate operations, and help organizations scale with intelligent processes.",
-    link: "Coming soon",
-    href: "https://bdatechnologies.com",
-  },
-];
-
-const placeholderTestimonials = [
-  {
-    q: "One specific observation from a real client.",
-    r: "VP, Financial Services (name withheld)",
-  },
-  {
-    q: "Another quiet, weeks-after-the-session note from a team lead.",
-    r: "Director, Retail Group (name withheld)",
-  },
-  {
-    q: "A third real, permissioned quote will replace this once collected.",
-    r: "Head of L&D, Public Sector (name withheld)",
-  },
-];
-
-const knowables = [
-  "Grew up in small-town. The first person in many rooms who understands both sides of the technology divide.",
-  "Three promotions in three years at his first job. Then he quit to build his own thing. That tells you something about how he thinks.",
-  "Tried joining the Indian Army. Multiple times. Did not make it. Kept the discipline. Named his company's logo colour dark olive green because of it.",
-  "He believes the best way to learn AI is to build something useless with it first. The useful things come later.",
-  "Based in Delhi. Happy to travel for a room worth being in.",
-];
-
 function AboutPage() {
+  const cms = usePageContent("about", EXACT_DEFAULT_ABOUT_CONTENT);
+
   const sectionRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -254,6 +83,205 @@ function AboutPage() {
     { y: y4, scale: scale4 },
   ];
 
+  const howIThinkCards = [
+    {
+      n: "01",
+      title: cms.howIThink.belief1_title,
+      desc: cms.howIThink.belief1_desc,
+    },
+    {
+      n: "02",
+      title: cms.howIThink.belief2_title,
+      desc: cms.howIThink.belief2_desc,
+    },
+    {
+      n: "03",
+      title: cms.howIThink.belief3_title,
+      desc: cms.howIThink.belief3_desc,
+    },
+    {
+      n: "04",
+      title: cms.howIThink.belief4_title,
+      desc: cms.howIThink.belief4_desc,
+    },
+  ];
+
+  const capabilitiesCards = [
+    {
+      icon: GraduationCap,
+      label: "01",
+      title: cms.capabilities.hired1_title,
+      body: cms.capabilities.hired1_desc,
+    },
+    {
+      icon: Compass,
+      label: "02",
+      title: cms.capabilities.hired2_title,
+      body: cms.capabilities.hired2_desc,
+    },
+    {
+      icon: Wrench,
+      label: "03",
+      title: cms.capabilities.hired3_title,
+      body: cms.capabilities.hired3_desc,
+    },
+  ];
+
+  const beliefsCards = [
+    {
+      n: "01",
+      h: cms.beliefs.b1_title,
+      b: cms.beliefs.b1_desc,
+    },
+    {
+      n: "02",
+      h: cms.beliefs.b2_title,
+      b: cms.beliefs.b2_desc,
+    },
+    {
+      n: "03",
+      h: cms.beliefs.b3_title,
+      b: cms.beliefs.b3_desc,
+    },
+    {
+      n: "04",
+      h: cms.beliefs.b4_title,
+      b: cms.beliefs.b4_desc,
+    },
+  ];
+
+  const rolesCards = [
+    {
+      icon: Building2,
+      label: "01",
+      title: cms.roles.r1_title,
+      body: cms.roles.r1_desc,
+    },
+    {
+      icon: Wrench,
+      label: "02",
+      title: cms.roles.r2_title,
+      body: cms.roles.r2_desc,
+    },
+    {
+      icon: BookOpen,
+      label: "03",
+      title: cms.roles.r3_title,
+      body: cms.roles.r3_desc,
+    },
+  ];
+
+  const journeyItems = [
+    {
+      year: cms.journey.j1_year,
+      t: cms.journey.j1_title,
+      d: cms.journey.j1_desc,
+    },
+    {
+      year: cms.journey.j2_year,
+      t: cms.journey.j2_title,
+      d: cms.journey.j2_desc,
+    },
+    {
+      year: cms.journey.j3_year,
+      t: cms.journey.j3_title,
+      d: cms.journey.j3_desc,
+    },
+    {
+      year: cms.journey.j4_year,
+      t: cms.journey.j4_title,
+      d: cms.journey.j4_desc,
+    },
+    {
+      year: cms.journey.j5_year,
+      t: cms.journey.j5_title,
+      d: cms.journey.j5_desc,
+    },
+    {
+      year: cms.journey.j6_year,
+      t: cms.journey.j6_title,
+      d: cms.journey.j6_desc,
+    },
+    {
+      year: cms.journey.j7_year,
+      t: cms.journey.j7_title,
+      d: cms.journey.j7_desc,
+    },
+    {
+      year: cms.journey.j8_year,
+      t: cms.journey.j8_title,
+      d: cms.journey.j8_desc,
+    },
+  ];
+
+  const buildsItems = [
+    {
+      name: cms.builds.b1_name,
+      year: cms.builds.b1_year,
+      desc: cms.builds.b1_desc,
+      link: cms.builds.b1_link.replace(/^https?:\/\//, ""),
+      href: cms.builds.b1_link,
+    },
+    {
+      name: cms.builds.b2_name,
+      year: cms.builds.b2_year,
+      desc: cms.builds.b2_desc,
+      link: cms.builds.b2_link.replace(/^https?:\/\//, ""),
+      href: cms.builds.b2_link,
+    },
+    {
+      name: cms.builds.b3_name,
+      year: cms.builds.b3_year,
+      desc: cms.builds.b3_desc,
+      link: cms.builds.b3_link.replace(/^https?:\/\//, ""),
+      href: cms.builds.b3_link,
+    },
+    {
+      name: cms.builds.b4_name,
+      year: cms.builds.b4_year,
+      desc: cms.builds.b4_desc,
+      link: cms.builds.b4_link.replace(/^https?:\/\//, ""),
+      href: cms.builds.b4_link,
+    },
+    {
+      name: cms.builds.b5_name,
+      year: cms.builds.b5_year,
+      desc: cms.builds.b5_desc,
+      link: cms.builds.b5_link === "#" ? "Coming soon" : cms.builds.b5_link.replace(/^https?:\/\//, ""),
+      href: cms.builds.b5_link,
+    },
+    {
+      name: cms.builds.b6_name,
+      year: cms.builds.b6_year,
+      desc: cms.builds.b6_desc,
+      link: cms.builds.b6_link === "#" ? "Coming soon" : cms.builds.b6_link.replace(/^https?:\/\//, ""),
+      href: cms.builds.b6_link,
+    },
+  ];
+
+  const testimonialsItems = [
+    {
+      q: cms.testimonials.t1_quote,
+      r: cms.testimonials.t1_role,
+    },
+    {
+      q: cms.testimonials.t2_quote,
+      r: cms.testimonials.t2_role,
+    },
+    {
+      q: cms.testimonials.t3_quote,
+      r: cms.testimonials.t3_role,
+    },
+  ];
+
+  const knowablesItems = [
+    cms.knowables.item_1,
+    cms.knowables.item_2,
+    cms.knowables.item_3,
+    cms.knowables.item_4,
+    cms.knowables.item_5,
+  ].filter(Boolean);
+
   return (
     <div className="min-h-screen w-full relative bg-canvas">
       {/* HERO */}
@@ -272,21 +300,17 @@ function AboutPage() {
           <div className="md:col-span-7">
             <Reveal eager>
               <p className="eyebrow eyebrow-blue flex items-center gap-2">
-                <User className="h-3.5 w-3.5" /> About
+                <User className="h-3.5 w-3.5" /> {cms.hero.eyebrow}
               </p>
             </Reveal>
             <Reveal delay={100} eager>
               <h1 className="mt-6 font-display text-4xl font-extrabold leading-[1.1] tracking-[-0.03em] text-ink sm:text-5xl md:text-6xl lg:text-[4.25rem] lg:leading-[1.05]">
-                I help founders turn business chaos{" "}
-                <span className="text-gradient-brand animate-gradient">into systems.</span>
+                <RichHeading text={cms.hero.heading} />
               </h1>
             </Reveal>
             <Reveal delay={250} eager>
               <p className="mt-8 max-w-xl text-lg text-ink-soft">
-                I am Ambesh Tiwari, a practical AI adoption partner, automation strategist, author,
-                and founder of BDA Technologies. My work combines hands-on training, custom workflow
-                design, and process implementation to help organizations run without founder
-                dependency.
+                {cms.hero.subheading}
               </p>
             </Reveal>
             <Reveal delay={420} eager className="mt-10">
@@ -296,13 +320,13 @@ function AboutPage() {
                 className="btn-premium inline-flex h-14 items-center gap-2 rounded-full px-8 text-base font-semibold"
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Work With Ambesh <ArrowRight className="h-4 w-4" />
+                  {cms.hero.button_text} <ArrowRight className="h-4 w-4" />
                 </span>
               </Link>
             </Reveal>
           </div>
           <Reveal delay={200} eager className="md:col-span-5">
-            <Monogram className="aspect-[4/5] w-full" since="Building since 2017" />
+            <Monogram className="aspect-[4/5] w-full" since={cms.hero.since} />
           </Reveal>
         </div>
       </section>
@@ -312,15 +336,15 @@ function AboutPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow eyebrow-indigo flex items-center gap-2">
-              <Quote className="h-3.5 w-3.5" /> A line he keeps coming back to
+              <Quote className="h-3.5 w-3.5" /> {cms.pullQuote.eyebrow}
             </p>
             <Quote className="mt-8 h-12 w-12 text-violet" />
             <blockquote className="mt-6 max-w-5xl font-serif text-3xl font-medium leading-[1.2] tracking-tight text-ink md:text-5xl">
               <span className="italic">
-                "You don't need to be perfect in everything to achieve your dreams.
+                "{cms.pullQuote.quote_p1}
               </span>{" "}
               <span className="text-gradient-brand animate-gradient italic">
-                You just have to find someone who knows what you don't."
+                {cms.pullQuote.quote_p2}"
               </span>
             </blockquote>
           </Reveal>
@@ -343,35 +367,20 @@ function AboutPage() {
           <Reveal className="md:col-span-4">
             <div className="md:sticky md:top-28">
               <p className="eyebrow eyebrow-cyan flex items-center gap-2">
-                <BookOpen className="h-3.5 w-3.5" /> The story
+                <BookOpen className="h-3.5 w-3.5" /> {cms.story.eyebrow}
               </p>
               <h2 className="mt-4 font-serif text-3xl font-semibold leading-[1.1] tracking-tight text-ink md:text-4xl">
-                From small town to building across{" "}
-                <em className="text-gradient-brand animate-gradient">three continents.</em>
+                <RichHeading text={cms.story.heading} defaultGradient="three continents." />
               </h2>
             </div>
           </Reveal>
           <div className="md:col-span-8 md:col-start-5">
             <Reveal delay={120}>
               <div className="space-y-6 text-lg leading-relaxed text-ink-soft">
-                <p>
-                  I started by helping people understand AI and automation in a practical way. Over
-                  time, one pattern became clear: most businesses do not struggle because they lack
-                  tools. They struggle because their execution depends too much on the founder.
-                </p>
-                <p>
-                  The founder knows what matters. The founder remembers the follow-ups. The founder
-                  connects the dots. The founder checks progress. The founder becomes the operating
-                  system.
-                </p>
-                <p>
-                  That works in the beginning. But it becomes a bottleneck as the business grows.
-                </p>
-                <p>
-                  Today, my work is focused on helping founder-led businesses build AI-powered
-                  operating systems that bring visibility, accountability, workflows, SOPs,
-                  automations, and execution routines into one practical structure.
-                </p>
+                <p>{cms.story.paragraph_1}</p>
+                <p>{cms.story.paragraph_2}</p>
+                <p>{cms.story.paragraph_3}</p>
+                <p>{cms.story.paragraph_4}</p>
               </div>
             </Reveal>
           </div>
@@ -389,43 +398,20 @@ function AboutPage() {
             {/* Left Column (Header) */}
             <div className="md:col-span-5 pb-4 md:pb-0">
               <p className="eyebrow eyebrow-indigo flex items-center gap-2">
-                <Brain className="h-3.5 w-3.5" /> How I Think
+                <Brain className="h-3.5 w-3.5" /> {cms.howIThink.eyebrow}
               </p>
               <h2 className="mt-4 pb-2 font-display text-[1.8rem] sm:text-2xl md:text-[2.2rem] font-extrabold leading-[1.15] tracking-[-0.03em] md:leading-[1.1] md:text-5xl text-ink">
-                Ideas that guide <br className="hidden sm:block" />
-                <span className="font-serif italic font-medium text-gradient-brand">my work.</span>
+                <RichHeading text={cms.howIThink.heading} defaultGradient="my work." />
               </h2>
               <p className="mt-3 md:mt-6 text-sm md:text-lg leading-[1.5] md:leading-[1.6] text-ink-soft">
-                These core beliefs shape how I help founders automate operations, scale teams, and
-                build self-managing companies.
+                {cms.howIThink.subheading}
               </p>
             </div>
 
             {/* Stacking Cards Right Column */}
             <div className="md:col-span-7 relative flex items-center justify-center md:mt-0">
               <div className="relative h-[220px] min-[360px]:h-[260px] min-[400px]:h-[300px] md:h-[380px] w-full max-w-2xl mt-2 md:mt-[45px]">
-                {[
-                  {
-                    n: "01",
-                    title: "A business should not depend on the founder.",
-                    desc: "Founder dependency is structural, not personal. It is resolved with clear accountability, SOPs, and system design.",
-                  },
-                  {
-                    n: "02",
-                    title: "AI adoption matters more than AI awareness.",
-                    desc: "Workshops have limited value unless teams change how they work. Real training requires daily AI adoption rhythms.",
-                  },
-                  {
-                    n: "03",
-                    title: "Do not automate a process you do not understand.",
-                    desc: "Automation makes clean processes faster, but broken ones fail faster. Map the workflow manually before coding.",
-                  },
-                  {
-                    n: "04",
-                    title: "Technology is only one part of the answer.",
-                    desc: "Clear roles and accountability matter more than new tools. Tech accelerates, but human execution is the foundation.",
-                  },
-                ].map(({ n, title, desc }, idx) => (
+                {howIThinkCards.map(({ n, title, desc }, idx) => (
                   <motion.div
                     key={n}
                     style={{
@@ -476,19 +462,17 @@ function AboutPage() {
         <div className="container-edit">
           <Reveal>
             <p className="eyebrow eyebrow-blue flex items-center gap-2">
-              <Wrench className="h-3.5 w-3.5" /> Capabilities
+              <Wrench className="h-3.5 w-3.5" /> {cms.capabilities.eyebrow}
             </p>
             <h2 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[1.05] tracking-tight text-ink md:text-6xl">
-              What Ambesh is{" "}
-              <span className="text-gradient-brand animate-gradient italic">hired for.</span>
+              <RichHeading text={cms.capabilities.heading} defaultGradient="hired for." />
             </h2>
             <p className="mt-6 max-w-2xl text-lg text-ink-soft">
-              Providing a complete bridge between workflow strategy, people training, and automated
-              systems implementation.
+              {cms.capabilities.subheading}
             </p>
           </Reveal>
           <div className="mt-16 grid gap-6 md:grid-cols-3">
-            {hiredFor.map((h, idx) => (
+            {capabilitiesCards.map((h, idx) => (
               <Reveal key={h.title} delay={100}>
                 <div className="custom-theme-card group h-full rounded-3xl p-8">
                   <div className="flex items-start justify-between">
@@ -526,15 +510,14 @@ function AboutPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow eyebrow-indigo flex items-center gap-2">
-              <Info className="h-3.5 w-3.5" /> What he believes
+              <Info className="h-3.5 w-3.5" /> {cms.beliefs.eyebrow}
             </p>
             <h2 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[1.05] tracking-tight text-ink md:text-6xl">
-              Four beliefs that shape{" "}
-              <span className="text-gradient-brand animate-gradient italic">every engagement.</span>
+              <RichHeading text={cms.beliefs.heading} defaultGradient="every engagement." />
             </h2>
           </Reveal>
           <div className="mt-16 grid gap-6 md:grid-cols-2">
-            {beliefs.map((b) => {
+            {beliefsCards.map((b) => {
               return (
                 <Reveal key={b.n} delay={80}>
                   <div className="custom-theme-card group h-full rounded-3xl p-7">
@@ -559,18 +542,17 @@ function AboutPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow eyebrow-cyan flex items-center gap-2">
-              <Building2 className="h-3.5 w-3.5" /> Three roles, one thread
+              <Building2 className="h-3.5 w-3.5" /> {cms.roles.eyebrow}
             </p>
             <h2 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[1.05] tracking-tight text-ink md:text-6xl">
-              Entrepreneur. Builder.{" "}
-              <span className="text-gradient-brand animate-gradient italic">Teacher.</span>
+              <RichHeading text={cms.roles.heading} defaultGradient="Teacher." />
             </h2>
             <p className="mt-6 max-w-2xl text-lg text-ink-soft">
-              Not a typical trainer. Someone who builds what he teaches, and teaches what he builds.
+              {cms.roles.subheading}
             </p>
           </Reveal>
           <div className="mt-16 grid gap-6 md:grid-cols-3">
-            {roles.map((r, idx) => (
+            {rolesCards.map((r, idx) => (
               <Reveal key={r.title} delay={100}>
                 <div className="custom-theme-card group h-full rounded-3xl p-8">
                   <div className="flex items-start justify-between">
@@ -609,15 +591,14 @@ function AboutPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow eyebrow-blue flex items-center gap-2">
-              <Compass className="h-3.5 w-3.5" /> The journey
+              <Compass className="h-3.5 w-3.5" /> {cms.journey.eyebrow}
             </p>
             <h2 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[1.05] tracking-tight text-ink md:text-6xl">
-              From small town to training teams across{" "}
-              <span className="text-gradient-brand animate-gradient italic">three continents.</span>
+              <RichHeading text={cms.journey.heading} defaultGradient="three continents." />
             </h2>
           </Reveal>
           <div className="mt-16 grid gap-px overflow-hidden rounded-3xl border border-rule bg-rule md:grid-cols-2">
-            {journey.map((j, i) => (
+            {journeyItems.map((j) => (
               <Reveal key={`${j.year}-${j.t}`} delay={80}>
                 <div className="h-full bg-canvas/40 p-8 transition-colors hover:bg-sand/40">
                   <p className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-ink-muted">
@@ -637,18 +618,17 @@ function AboutPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow eyebrow-indigo flex items-center gap-2">
-              <ExternalLink className="h-3.5 w-3.5" /> Built along the way
+              <ExternalLink className="h-3.5 w-3.5" /> {cms.builds.eyebrow}
             </p>
             <h2 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[1.05] tracking-tight text-ink md:text-6xl">
-              One company. One school.{" "}
-              <span className="text-gradient-brand animate-gradient italic">Three products.</span>
+              <RichHeading text={cms.builds.heading} defaultGradient="Three products." />
             </h2>
             <p className="mt-6 max-w-2xl text-lg text-ink-soft">
-              Everything here started as something Ambesh needed for his own work.
+              {cms.builds.subheading}
             </p>
           </Reveal>
           <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {builds.map((b) => (
+            {buildsItems.map((b) => (
               <Reveal key={b.name} delay={80}>
                 <a
                   href={b.href}
@@ -689,19 +669,17 @@ function AboutPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow eyebrow-cyan flex items-center gap-2">
-              <Mic className="h-3.5 w-3.5" /> What people say
+              <Mic className="h-3.5 w-3.5" /> {cms.testimonials.eyebrow}
             </p>
             <h2 className="mt-4 max-w-3xl font-serif text-4xl font-semibold leading-[1.05] tracking-tight text-ink md:text-6xl">
-              About working{" "}
-              <span className="text-gradient-brand animate-gradient italic">together.</span>
+              <RichHeading text={cms.testimonials.heading} defaultGradient="together." />
             </h2>
             <p className="mt-6 max-w-2xl text-lg text-ink-soft">
-              The best feedback arrives weeks after the session, when something in the team has
-              quietly changed.
+              {cms.testimonials.subheading}
             </p>
           </Reveal>
           <div className="mt-16 grid gap-6 md:grid-cols-3">
-            {placeholderTestimonials.map((t, i) => (
+            {testimonialsItems.map((t, i) => (
               <Reveal key={i} delay={100}>
                 <div className="custom-theme-card-static h-full rounded-3xl p-8">
                   <Mic
@@ -727,15 +705,14 @@ function AboutPage() {
         <div className="container-edit grid gap-12 md:grid-cols-12">
           <Reveal className="md:col-span-5">
             <p className="eyebrow eyebrow-blue flex items-center gap-2">
-              <Info className="h-3.5 w-3.5" /> A few things worth knowing
+              <Info className="h-3.5 w-3.5" /> {cms.knowables.eyebrow}
             </p>
             <h2 className="mt-4 font-serif text-3xl font-semibold leading-[1.1] tracking-tight text-ink md:text-4xl">
-              Small details that shape{" "}
-              <span className="italic text-gradient-brand animate-gradient">how Ambesh works.</span>
+              <RichHeading text={cms.knowables.heading} defaultGradient="how Ambesh works." />
             </h2>
           </Reveal>
           <ul className="md:col-span-7 md:col-start-6 space-y-5">
-            {knowables.map((k, i) => (
+            {knowablesItems.map((k, i) => (
               <Reveal key={i} delay={60} as="li">
                 <div className="flex gap-4 border-b border-rule pb-5">
                   <span className="font-mono text-xs text-violet">0{i + 1}</span>
@@ -782,17 +759,13 @@ function AboutPage() {
         <div className="container-edit relative py-12 text-center md:py-20">
           <Reveal>
             <p className="eyebrow eyebrow-indigo flex items-center gap-2">
-              <ArrowRight className="h-3.5 w-3.5" /> Final word
+              <ArrowRight className="h-3.5 w-3.5" /> {cms.cta.eyebrow}
             </p>
             <h2 className="mx-auto mt-6 max-w-4xl font-display text-4xl font-extrabold leading-[1.1] tracking-[-0.03em] text-white sm:text-5xl md:text-7xl">
-              If any of this resonates,{" "}
-              <span className="font-serif italic font-medium text-gradient-brand">
-                let us have a conversation.
-              </span>
+              <RichHeading text={cms.cta.heading} defaultGradient="let us have a conversation." />
             </h2>
             <p className="mx-auto mt-8 max-w-2xl text-lg text-white/70">
-              Thirty minutes. No pitch deck. No pressure. Just a real discussion about what your
-              team needs and whether we are the right fit for each other.
+              {cms.cta.subheading}
             </p>
           </Reveal>
           <Reveal delay={200} className="mt-12">
@@ -803,11 +776,11 @@ function AboutPage() {
                 className="btn-premium inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-1 min-[375px]:gap-1.5 whitespace-nowrap rounded-full px-2 min-[375px]:px-4 text-[11px] min-[360px]:text-xs min-[400px]:text-sm font-semibold text-white sm:h-14 sm:flex-none sm:gap-2 sm:px-8 sm:text-base"
               >
                 <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
-                  Book a Strategy Call <ArrowRight className="h-4 w-4" />
+                  {cms.cta.button_text} <ArrowRight className="h-4 w-4" />
                 </span>
               </Link>
               <a
-                href="https://mail.google.com/mail/?view=cm&fs=1&to=hello@ambesh.com"
+                href={`https://mail.google.com/mail/?view=cm&fs=1&to=${cms.cta.email}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-email group inline-flex h-12 min-w-0 flex-1 items-center justify-center whitespace-nowrap rounded-full px-2 min-[375px]:px-4 text-[11px] min-[360px]:text-xs min-[400px]:text-sm font-semibold text-white sm:h-14 sm:flex-none sm:px-8 sm:text-base"
@@ -819,12 +792,12 @@ function AboutPage() {
                     className="h-7 w-7 shrink-0 object-contain sm:h-8 sm:w-8"
                   />
                 </span>
-                <span className="btn-email-text relative z-10 hidden min-[360px]:inline">hello@ambesh.com</span>
+                <span className="btn-email-text relative z-10 hidden min-[360px]:inline">{cms.cta.email}</span>
                 <span className="btn-email-text relative z-10 min-[360px]:hidden">Email</span>
               </a>
             </div>
             <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.2em] text-white/50">
-              Responds within 24 hours
+              {cms.cta.note}
             </p>
           </Reveal>
         </div>

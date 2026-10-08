@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo, type FormEvent } from "react";
 import { Reveal } from "@/components/Reveal";
-import { buildMeta, jsonLd, breadcrumbSchema, SITE_URL } from "@/lib/seo";
+import { buildMeta, jsonLd, breadcrumbSchema } from "@/lib/seo";
 import { BookOpen, Search, Calendar, Clock, ArrowRight, Mail } from "lucide-react";
 import { GridVignetteBackground } from "@/components/ui/vignette-grid-background";
+import { usePageContent } from "@/hooks/use-page-content";
+import { EXACT_DEFAULT_INSIGHTS_CONTENT } from "./admin/pages/insights";
+import { RichHeading } from "@/components/RichHeading";
+import { submitLeadToGHL } from "@/lib/ghl";
 
 export const Route = createFileRoute("/insights")({
   head: () => {
@@ -42,56 +46,101 @@ interface Article {
   slug: string;
 }
 
-const articles: Article[] = [
-  {
-    title: "Why Your Business is Stuck: The Founder Dependency Trap",
-    excerpt:
-      "If every decision, client issue, and operational query flows through you, you haven't built a company - you've built a high-paying job. Here is how to step out of the loop.",
-    date: "July 12, 2026",
-    readTime: "6 min read",
-    category: "Systems",
-    slug: "founder-dependency-trap",
-  },
-  {
-    title: "Pragmatic AI: When to Use LLMs (And When to Avoid Them)",
-    excerpt:
-      "Most corporate AI implementations fail because leaders attempt to automate complex reasoning before stabilizing basic workflows. Let's look at the real opportunity.",
-    date: "June 28, 2026",
-    readTime: "8 min read",
-    category: "AI & Tech",
-    slug: "pragmatic-ai-use-cases",
-  },
-  {
-    title: "The 90-Day Strategy Sprint: Aligning Team Workflows",
-    excerpt:
-      "How to translate long-term goals into clear, department-level weekly actions that teams can execute autonomously without constant leadership check-ins.",
-    date: "May 15, 2026",
-    readTime: "5 min read",
-    category: "Strategy",
-    slug: "90-day-strategy-sprint",
-  },
-  {
-    title: "SOPs That Sell: Writing Workflows Your Team Will Actually Use",
-    excerpt:
-      "SOPs languish in shared drives because they are written like compliance manuals. Here is a framework for creating action-oriented guides that drive consistency.",
-    date: "April 02, 2026",
-    readTime: "7 min read",
-    category: "Systems",
-    slug: "writing-useful-sops",
-  },
-];
-
 function InsightsPage() {
+  const content = usePageContent("insights", EXACT_DEFAULT_INSIGHTS_CONTENT);
+
+  const hero = content.hero || EXACT_DEFAULT_INSIGHTS_CONTENT.hero;
+  const articlesSec = content.articles || EXACT_DEFAULT_INSIGHTS_CONTENT.articles;
+  const newsletter = content.newsletter || EXACT_DEFAULT_INSIGHTS_CONTENT.newsletter;
+
   const [selectedCategory, setSelectedCategory] = useState<Category>("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
 
-  const filteredArticles = articles.filter((article) => {
-    const matchesCategory = selectedCategory === "All" || article.category === selectedCategory;
-    const matchesSearch =
-      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const articleList = useMemo<Article[]>(() => {
+    return [
+      {
+        title: articlesSec.art1_title || "Why Your Business is Stuck: The Founder Dependency Trap",
+        excerpt:
+          articlesSec.art1_excerpt ||
+          "If every decision, client issue, and operational query flows through you, you haven't built a company - you've built a high-paying job. Here is how to step out of the loop.",
+        date: articlesSec.art1_date || "July 12, 2026",
+        readTime: articlesSec.art1_read_time || "6 min read",
+        category: (articlesSec.art1_category as Exclude<Category, "All">) || "Systems",
+        slug: articlesSec.art1_slug || "founder-dependency-trap",
+      },
+      {
+        title:
+          articlesSec.art2_title ||
+          "Pragmatic AI: When to Use LLMs (And When to Avoid Them)",
+        excerpt:
+          articlesSec.art2_excerpt ||
+          "Most corporate AI implementations fail because leaders attempt to automate complex reasoning before stabilizing basic workflows. Let's look at the real opportunity.",
+        date: articlesSec.art2_date || "June 28, 2026",
+        readTime: articlesSec.art2_read_time || "8 min read",
+        category: (articlesSec.art2_category as Exclude<Category, "All">) || "AI & Tech",
+        slug: articlesSec.art2_slug || "pragmatic-ai-use-cases",
+      },
+      {
+        title:
+          articlesSec.art3_title ||
+          "The 90-Day Strategy Sprint: Aligning Team Workflows",
+        excerpt:
+          articlesSec.art3_excerpt ||
+          "How to translate long-term goals into clear, department-level weekly actions that teams can execute autonomously without constant leadership check-ins.",
+        date: articlesSec.art3_date || "May 15, 2026",
+        readTime: articlesSec.art3_read_time || "5 min read",
+        category: (articlesSec.art3_category as Exclude<Category, "All">) || "Strategy",
+        slug: articlesSec.art3_slug || "90-day-strategy-sprint",
+      },
+      {
+        title:
+          articlesSec.art4_title ||
+          "SOPs That Sell: Writing Workflows Your Team Will Actually Use",
+        excerpt:
+          articlesSec.art4_excerpt ||
+          "SOPs languish in shared drives because they are written like compliance manuals. Here is a framework for creating action-oriented guides that drive consistency.",
+        date: articlesSec.art4_date || "April 02, 2026",
+        readTime: articlesSec.art4_read_time || "7 min read",
+        category: (articlesSec.art4_category as Exclude<Category, "All">) || "Systems",
+        slug: articlesSec.art4_slug || "writing-useful-sops",
+      },
+    ];
+  }, [articlesSec]);
+
+  const filteredArticles = useMemo(() => {
+    return articleList.filter((article) => {
+      const matchesCategory = selectedCategory === "All" || article.category === selectedCategory;
+      const matchesSearch =
+        article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [articleList, selectedCategory, searchQuery]);
+
+  async function onNewsletterSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const email = (new FormData(e.currentTarget).get("email") as string) || "";
+
+    try {
+      if (typeof submitLeadToGHL === "function") {
+        await submitLeadToGHL({
+          data: {
+            name: email.split("@")[0] || "Insights Reader",
+            email,
+            serviceLabel: "Newsletter - Private Letter Signup",
+            pageUrl: typeof window !== "undefined" ? window.location.href : "",
+          },
+        });
+      }
+    } catch (error) {
+      console.warn("GHL sync notice:", error);
+    }
+
+    setSubscribed(true);
+    const recipient = newsletter.recipient_email || "hello@ambesh.com";
+    window.location.href = `mailto:${recipient}?subject=Subscribe%20to%20Private%20Letter&body=Please%20add%20${encodeURIComponent(email)}%20to%20the%20newsletter%20list.`;
+  }
 
   return (
     <>
@@ -109,17 +158,23 @@ function InsightsPage() {
         <div className="container-edit relative">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <BookOpen className="h-3.5 w-3.5" /> Insights
+              <BookOpen className="h-3.5 w-3.5" /> {hero.eyebrow}
             </p>
             <h1 className="mt-5 max-w-3xl font-display text-[2.4rem] font-extrabold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl md:text-6xl">
-              Systems, scaling, and{" "}
-              <span className="font-serif italic font-medium text-gradient-brand animate-gradient">
-                practical AI leverage.
-              </span>
+              <RichHeading
+                text={hero.heading}
+                defaultContent={
+                  <>
+                    Systems, scaling, and{" "}
+                    <span className="font-serif italic font-medium text-gradient-brand animate-gradient">
+                      practical AI leverage.
+                    </span>
+                  </>
+                }
+              />
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-[1.6] text-ink-soft">
-              Essays, frameworks, and guides on how to simplify operations, reduce founder
-              dependence, and install automated leverage.
+              {hero.description}
             </p>
           </Reveal>
 
@@ -148,7 +203,7 @@ function InsightsPage() {
                 <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-ink-muted" />
                 <input
                   type="text"
-                  placeholder="Search articles..."
+                  placeholder={hero.search_placeholder || "Search articles..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full rounded-full border border-rule bg-canvas py-2 pl-9 pr-4 text-xs text-ink outline-none focus:border-ink/30 focus:bg-canvas transition-colors"
@@ -159,7 +214,7 @@ function InsightsPage() {
 
           <div className="insights-card-grid mt-12 grid gap-6 md:grid-cols-2">
             {filteredArticles.length > 0 ? (
-              filteredArticles.map((article, index) => (
+              filteredArticles.map((article) => (
                 <Reveal key={article.slug} delay={100}>
                   <article className="custom-theme-card group flex h-full flex-col justify-between rounded-2xl p-7">
                     <div>
@@ -213,33 +268,42 @@ function InsightsPage() {
         <div className="container-edit relative max-w-3xl text-center">
           <Reveal>
             <p className="eyebrow flex items-center gap-2">
-              <Mail className="h-3.5 w-3.5" /> Newsletter
+              <Mail className="h-3.5 w-3.5" /> {newsletter.eyebrow}
             </p>
             <h2 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
-              Get systems advice directly in your inbox.
+              <RichHeading
+                text={newsletter.heading}
+                defaultContent={<>Get systems advice directly in your inbox.</>}
+              />
             </h2>
             <p className="mt-4 text-base text-ink-soft">
-              Every fortnight, I share practical SOP templates, automation ideas, and AI prompts
-              that founders are using to scale operations and reclaim their time.
+              {newsletter.description}
             </p>
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center"
-            >
-              <input
-                type="email"
-                required
-                placeholder="Enter your email address"
-                className="rounded-full border border-rule bg-canvas px-5 py-3 text-xs text-ink outline-none focus:border-ink/30 w-full sm:max-w-xs transition-colors"
-              />
-              <button
-                type="submit"
-                className="btn-premium rounded-full px-6 py-3 text-xs font-semibold text-canvas shadow-lift transition-all hover:-translate-y-0.5"
+            {subscribed ? (
+              <div className="mt-8 rounded-full border border-emerald-500/20 bg-emerald-500/10 py-3 px-6 text-sm font-semibold text-emerald-400">
+                🎉 Thank you for subscribing! Check your inbox soon.
+              </div>
+            ) : (
+              <form
+                onSubmit={onNewsletterSubmit}
+                className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center"
               >
-                Join Private Letter
-              </button>
-            </form>
-            <p className="mt-3 text-xs text-ink-muted">Zero spam. Unsubscribe in a single click.</p>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  placeholder={newsletter.email_placeholder || "Enter your email address"}
+                  className="rounded-full border border-rule bg-canvas px-5 py-3 text-xs text-ink outline-none focus:border-ink/30 w-full sm:max-w-xs transition-colors"
+                />
+                <button
+                  type="submit"
+                  className="btn-premium rounded-full px-6 py-3 text-xs font-semibold text-canvas shadow-lift transition-all hover:-translate-y-0.5"
+                >
+                  {newsletter.btn_text}
+                </button>
+              </form>
+            )}
+            <p className="mt-3 text-xs text-ink-muted">{newsletter.disclaimer}</p>
           </Reveal>
         </div>
       </section>
