@@ -32,6 +32,25 @@ function getCachedContent<T>(page: string, defaultContent: T): T {
   }
 }
 
+function isContentEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (!a || !b || typeof a !== "object" || typeof b !== "object") return false;
+  const keysA = Object.keys(a as object);
+  const keysB = Object.keys(b as object);
+  if (keysA.length !== keysB.length) return false;
+  for (const k of keysA) {
+    if (!Object.prototype.hasOwnProperty.call(b, k)) return false;
+    const valA = (a as Record<string, unknown>)[k];
+    const valB = (b as Record<string, unknown>)[k];
+    if (typeof valA === "object" && valA !== null) {
+      if (!isContentEqual(valA, valB)) return false;
+    } else if (valA !== valB) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export function usePageContent<T extends Record<string, Record<string, string>>>(
   page: string,
   defaultContent: T,
@@ -50,13 +69,13 @@ export function usePageContent<T extends Record<string, Record<string, string>>>
     contentRef.current = content;
   }, [content]);
 
-  // Apply updates safely with deep comparison check to prevent unnecessary re-renders
+  // Apply updates safely with true deep comparison check to prevent unnecessary re-renders
   const applyContentUpdate = useCallback(
     (updater: (prev: T) => T) => {
       const current = contentRef.current;
       const next = updater(current);
 
-      if (JSON.stringify(current) === JSON.stringify(next)) {
+      if (isContentEqual(current, next)) {
         return;
       }
 
@@ -111,8 +130,10 @@ export function usePageContent<T extends Record<string, Record<string, string>>>
       }, 150);
     }
 
-    // Initial background synchronization
-    debouncedFetch();
+    // Only run background fetch if initialData was not provided by the SSR loader
+    if (!initialData || Object.keys(initialData).length === 0) {
+      debouncedFetch();
+    }
 
     // 1. Cross-tab instant broadcast (0ms delay between Admin tab and Live tab)
     let bc: BroadcastChannel | null = null;
