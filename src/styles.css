@@ -560,8 +560,8 @@
 
   /* Subtle reveal - fade + small translate, smooth and snappy */
   .reveal {
-    opacity: 0;
-    transform: translate3d(0, 8px, 0);
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
     transition:
       opacity 0.4s cubic-bezier(0.215, 0.61, 0.355, 1),
       transform 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);

@@ -51,7 +51,7 @@ export function Reveal({
   eager = false,
   style,
 }: RevealProps) {
-  const [visible, setVisible] = useState(eager);
+  const [visible, setVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const ref = useRef<HTMLElement>(null);
 
