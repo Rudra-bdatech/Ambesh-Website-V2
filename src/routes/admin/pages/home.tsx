@@ -29,7 +29,7 @@ export const Route = createFileRoute("/admin/pages/home")({
 });
 
 // ─── EXACT 1:1 Default content matching the live index.tsx ───────────────────
-export const EXACT_DEFAULT_HOME_CONTENT = {
+const EXACT_DEFAULT_HOME_CONTENT = {
   hero: {
     eyebrow: "AI Strategist  |  Author  |  Entrepreneur",
     heading: "I Help Founders Scale Their [Service Business] *Without Depending on Them.*",
@@ -308,7 +308,7 @@ const sectionMeta: Record<
   },
 };
 
-export function HomePageEditor() {
+function HomePageEditor() {
   const [content, setContent] = useState<ContentMap>({});
   const [loading, setLoading] = useState(true);
   const [savingSection, setSavingSection] = useState<string | null>(null);
@@ -386,10 +386,17 @@ export function HomePageEditor() {
 
       if (error) throw error;
 
-      // Realtime cross-tab sync
+      // Realtime cross-tab sync & instant cache update
+      try {
+        const cached = localStorage.getItem("cms-cache-home");
+        const parsed = cached ? JSON.parse(cached) : {};
+        parsed[section] = sectionData;
+        localStorage.setItem("cms-cache-home", JSON.stringify(parsed));
+      } catch (_) {}
+
       try {
         const channel = new BroadcastChannel("ambesh-cms-sync");
-        channel.postMessage({ page: "home", section, timestamp: Date.now() });
+        channel.postMessage({ page: "home", section, data: sectionData, timestamp: Date.now() });
         channel.close();
       } catch (bcErr) {
         console.warn("BroadcastChannel error:", bcErr);

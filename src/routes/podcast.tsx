@@ -5,10 +5,14 @@ import { Reveal } from "@/components/Reveal";
 import { buildMeta, jsonLd, breadcrumbSchema, SITE_URL, DEFAULT_OG_IMAGE } from "@/lib/seo";
 import { GridVignetteBackground } from "@/components/ui/vignette-grid-background";
 import { usePageContent } from "@/hooks/use-page-content";
-import { EXACT_DEFAULT_PODCAST_CONTENT } from "./admin/pages/podcast";
+import { getPageContent } from "@/lib/supabase";
+import { EXACT_DEFAULT_PODCAST_CONTENT } from "@/lib/cms-defaults";
 import { RichHeading } from "@/components/RichHeading";
 
 export const Route = createFileRoute("/podcast")({
+  loader: async () => {
+    return await getPageContent("podcast");
+  },
   head: () => {
     const m = buildMeta({
       path: "/podcast",
@@ -84,7 +88,8 @@ function Waveform() {
 }
 
 function PodcastPage() {
-  const cms = usePageContent("podcast", EXACT_DEFAULT_PODCAST_CONTENT);
+  const loaderData = Route.useLoaderData();
+  const cms = usePageContent("podcast", EXACT_DEFAULT_PODCAST_CONTENT, loaderData);
 
   // Dynamic Platforms
   const platformLinks = useMemo(() => {

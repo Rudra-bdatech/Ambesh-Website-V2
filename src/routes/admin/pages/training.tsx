@@ -27,7 +27,7 @@ export const Route = createFileRoute("/admin/pages/training")({
 });
 
 // ─── EXACT 1:1 Default content matching the live training.tsx ──────────────────
-export const EXACT_DEFAULT_TRAINING_CONTENT = {
+const EXACT_DEFAULT_TRAINING_CONTENT = {
   hero: {
     eyebrow: "Training",
     heading: "Corporate AI training that turns *confusion into daily use.*",
@@ -195,7 +195,7 @@ function FormattingTips() {
   );
 }
 
-export function TrainingPageEditor() {
+function TrainingPageEditor() {
   const [content, setContent] = useState<ContentMap>(() => {
     const init: ContentMap = {};
     for (const [sec, keys] of Object.entries(EXACT_DEFAULT_TRAINING_CONTENT)) {
@@ -274,15 +274,22 @@ export function TrainingPageEditor() {
 
       if (error) throw error;
 
-      // Broadcast instant live update to all tabs
+      // Broadcast instant live update to all tabs & update local cache
       if (typeof window !== "undefined") {
+        try {
+          const cached = localStorage.getItem("cms-cache-training");
+          const parsed = cached ? JSON.parse(cached) : {};
+          parsed[section] = sectionData;
+          localStorage.setItem("cms-cache-training", JSON.stringify(parsed));
+        } catch (_) {}
+
         localStorage.setItem(
           "ambesh_training_sync",
           JSON.stringify({ section, timestamp: Date.now() })
         );
         try {
           const channel = new BroadcastChannel("ambesh-cms-sync");
-          channel.postMessage({ page: "training", section, data: sectionData });
+          channel.postMessage({ page: "training", section, data: sectionData, timestamp: Date.now() });
           channel.close();
         } catch {
           // ignore BroadcastChannel fallback

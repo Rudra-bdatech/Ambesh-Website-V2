@@ -3,9 +3,13 @@ import { ShieldCheck } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { buildMeta, jsonLd, breadcrumbSchema, SITE_URL } from "@/lib/seo";
 import { usePageContent } from "@/hooks/use-page-content";
-import { EXACT_DEFAULT_TERMS_CONTENT } from "./admin/pages/terms";
+import { getPageContent } from "@/lib/supabase";
+import { EXACT_DEFAULT_TERMS_CONTENT } from "@/lib/cms-defaults";
 
 export const Route = createFileRoute("/terms")({
+  loader: async () => {
+    return await getPageContent("terms");
+  },
   head: () => {
     const m = buildMeta({
       path: "/terms",
@@ -30,7 +34,8 @@ export const Route = createFileRoute("/terms")({
 });
 
 function TermsPage() {
-  const content = usePageContent("terms", EXACT_DEFAULT_TERMS_CONTENT);
+  const loaderData = Route.useLoaderData();
+  const content = usePageContent("terms", EXACT_DEFAULT_TERMS_CONTENT, loaderData);
 
   const header = content.header || EXACT_DEFAULT_TERMS_CONTENT.header;
   const intro = content.intro || EXACT_DEFAULT_TERMS_CONTENT.intro;

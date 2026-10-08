@@ -27,7 +27,7 @@ export const Route = createFileRoute("/admin/pages/insights")({
 });
 
 // ─── EXACT 1:1 Default content matching the live insights.tsx ───────────────────
-export const EXACT_DEFAULT_INSIGHTS_CONTENT = {
+const EXACT_DEFAULT_INSIGHTS_CONTENT = {
   hero: {
     eyebrow: "Insights",
     heading: "Systems, scaling, and *practical AI leverage.*",
@@ -209,7 +209,7 @@ const sectionMeta: Record<
   },
 };
 
-export function InsightsPageEditor() {
+function InsightsPageEditor() {
   const [content, setContent] = useState<ContentMap>({});
   const [loading, setLoading] = useState(true);
   const [savingSection, setSavingSection] = useState<string | null>(null);
@@ -287,10 +287,17 @@ export function InsightsPageEditor() {
 
       if (error) throw error;
 
-      // Realtime cross-tab sync
+      // Realtime cross-tab sync & instant cache update
+      try {
+        const cached = localStorage.getItem("cms-cache-insights");
+        const parsed = cached ? JSON.parse(cached) : {};
+        parsed[section] = sectionData;
+        localStorage.setItem("cms-cache-insights", JSON.stringify(parsed));
+      } catch (_) {}
+
       try {
         const channel = new BroadcastChannel("ambesh-cms-sync");
-        channel.postMessage({ page: "insights", section, timestamp: Date.now() });
+        channel.postMessage({ page: "insights", section, data: sectionData, timestamp: Date.now() });
         channel.close();
       } catch (bcErr) {
         console.warn("BroadcastChannel error:", bcErr);

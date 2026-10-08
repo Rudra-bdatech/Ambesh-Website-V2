@@ -1,8 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BusinessOSPage, faqs } from "./services";
+import { BusinessOSPage, faqs } from "@/components/BusinessOSPage";
+import { getPageContent } from "@/lib/supabase";
 import { buildMeta, jsonLd, breadcrumbSchema, faqSchema, SITE_URL } from "@/lib/seo";
 
 export const Route = createFileRoute("/work")({
+  loader: async () => {
+    return await getPageContent("services");
+  },
   head: () => {
     const m = buildMeta({
       path: "/work",
@@ -35,5 +39,10 @@ export const Route = createFileRoute("/work")({
       ],
     };
   },
-  component: BusinessOSPage,
+  component: WorkRouteComponent,
 });
+
+function WorkRouteComponent() {
+  const loaderData = Route.useLoaderData();
+  return <BusinessOSPage loaderData={loaderData} />;
+}

@@ -29,12 +29,16 @@ import { ServiceCarousel } from "@/components/ServiceCarousel";
 import { BookStickySection } from "@/components/BookStickySection";
 import { buildMeta, jsonLd, breadcrumbSchema, SITE_URL } from "@/lib/seo";
 import { GridVignetteBackground } from "@/components/ui/vignette-grid-background";
-import { ParticleField } from "@/components/ParticleField";
-import { RichHeading } from "@/components/RichHeading";
 import { usePageContent } from "@/hooks/use-page-content";
-import { EXACT_DEFAULT_HOME_CONTENT } from "./admin/pages/home";
+import { getPageContent } from "@/lib/supabase";
+import { EXACT_DEFAULT_HOME_CONTENT } from "@/lib/cms-defaults";
+import { RichHeading } from "@/components/RichHeading";
+import { ParticleField } from "@/components/ParticleField";
 
 export const Route = createFileRoute("/")({
+  loader: async () => {
+    return await getPageContent("home");
+  },
   head: () => {
     const m = buildMeta({
       path: "/",
@@ -197,7 +201,8 @@ function ScrollProgress() {
 }
 
 function HomePage() {
-  const cms = usePageContent("home", EXACT_DEFAULT_HOME_CONTENT);
+  const loaderData = Route.useLoaderData();
+  const cms = usePageContent("home", EXACT_DEFAULT_HOME_CONTENT, loaderData);
   const [hoveredService, setHoveredService] = useState<number | null>(null);
   const [spotIndex, setSpotIndex] = useState(0);
   const problemsRef = useRef<HTMLDivElement>(null);

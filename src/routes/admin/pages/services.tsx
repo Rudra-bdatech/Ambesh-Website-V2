@@ -26,7 +26,7 @@ export const Route = createFileRoute("/admin/pages/services")({
 });
 
 // ─── EXACT 1:1 Default content matching the live services.tsx ─────────────────
-export const EXACT_DEFAULT_SERVICES_CONTENT = {
+const EXACT_DEFAULT_SERVICES_CONTENT = {
   hero: {
     eyebrow: "Business OS",
     heading: "Build the operating system your business needs to *scale without you.*",
@@ -220,7 +220,7 @@ function FormattingTips() {
   );
 }
 
-export function ServicesPageEditor() {
+function ServicesPageEditor() {
   const [content, setContent] = useState<ContentMap>(() => {
     const init: ContentMap = {};
     for (const [sec, keys] of Object.entries(EXACT_DEFAULT_SERVICES_CONTENT)) {
@@ -299,15 +299,22 @@ export function ServicesPageEditor() {
 
       if (error) throw error;
 
-      // Broadcast instant live update to all tabs
+      // Broadcast instant live update to all tabs & update local cache
       if (typeof window !== "undefined") {
+        try {
+          const cached = localStorage.getItem("cms-cache-services");
+          const parsed = cached ? JSON.parse(cached) : {};
+          parsed[section] = sectionData;
+          localStorage.setItem("cms-cache-services", JSON.stringify(parsed));
+        } catch (_) {}
+
         localStorage.setItem(
           "ambesh_services_sync",
           JSON.stringify({ section, timestamp: Date.now() })
         );
         try {
           const channel = new BroadcastChannel("ambesh-cms-sync");
-          channel.postMessage({ page: "services", section, data: sectionData });
+          channel.postMessage({ page: "services", section, data: sectionData, timestamp: Date.now() });
           channel.close();
         } catch {
           // ignore BroadcastChannel fallback

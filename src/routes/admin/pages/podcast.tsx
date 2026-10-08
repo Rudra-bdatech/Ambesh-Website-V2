@@ -27,7 +27,7 @@ export const Route = createFileRoute("/admin/pages/podcast")({
 });
 
 // ─── EXACT 1:1 Default content matching the live podcast.tsx ───────────────────
-export const EXACT_DEFAULT_PODCAST_CONTENT = {
+const EXACT_DEFAULT_PODCAST_CONTENT = {
   hero: {
     eyebrow: "The podcast",
     heading: "Inspire with *Ambesh.*",
@@ -153,7 +153,7 @@ function FormattingTips() {
   );
 }
 
-export function PodcastPageEditor() {
+function PodcastPageEditor() {
   const [content, setContent] = useState<ContentMap>(() => {
     const init: ContentMap = {};
     for (const [sec, keys] of Object.entries(EXACT_DEFAULT_PODCAST_CONTENT)) {
@@ -232,15 +232,22 @@ export function PodcastPageEditor() {
 
       if (error) throw error;
 
-      // Broadcast instant live update to all tabs
+      // Broadcast instant live update to all tabs & update local cache
       if (typeof window !== "undefined") {
+        try {
+          const cached = localStorage.getItem("cms-cache-podcast");
+          const parsed = cached ? JSON.parse(cached) : {};
+          parsed[section] = sectionData;
+          localStorage.setItem("cms-cache-podcast", JSON.stringify(parsed));
+        } catch (_) {}
+
         localStorage.setItem(
           "ambesh_podcast_sync",
           JSON.stringify({ section, timestamp: Date.now() })
         );
         try {
           const channel = new BroadcastChannel("ambesh-cms-sync");
-          channel.postMessage({ page: "podcast", section, data: sectionData });
+          channel.postMessage({ page: "podcast", section, data: sectionData, timestamp: Date.now() });
           channel.close();
         } catch {
           // ignore BroadcastChannel fallback

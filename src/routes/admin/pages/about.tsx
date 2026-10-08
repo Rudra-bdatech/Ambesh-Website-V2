@@ -31,7 +31,7 @@ export const Route = createFileRoute("/admin/pages/about")({
 });
 
 // ─── EXACT 1:1 Default content matching the live about.tsx ───────────────────
-export const EXACT_DEFAULT_ABOUT_CONTENT = {
+const EXACT_DEFAULT_ABOUT_CONTENT = {
   hero: {
     eyebrow: "About",
     heading: "I help founders turn business chaos *into systems.*",
@@ -393,7 +393,7 @@ const sectionMeta: Record<
   },
 };
 
-export function AboutPageEditor() {
+function AboutPageEditor() {
   const [content, setContent] = useState<ContentMap>({});
   const [loading, setLoading] = useState(true);
   const [savingSection, setSavingSection] = useState<string | null>(null);
@@ -471,10 +471,17 @@ export function AboutPageEditor() {
 
       if (error) throw error;
 
-      // Realtime cross-tab sync
+      // Realtime cross-tab sync & instant cache update
+      try {
+        const cached = localStorage.getItem("cms-cache-about");
+        const parsed = cached ? JSON.parse(cached) : {};
+        parsed[section] = sectionData;
+        localStorage.setItem("cms-cache-about", JSON.stringify(parsed));
+      } catch (_) {}
+
       try {
         const channel = new BroadcastChannel("ambesh-cms-sync");
-        channel.postMessage({ page: "about", section, timestamp: Date.now() });
+        channel.postMessage({ page: "about", section, data: sectionData, timestamp: Date.now() });
         channel.close();
       } catch (bcErr) {
         console.warn("BroadcastChannel error:", bcErr);

@@ -22,10 +22,14 @@ import { whatsappUrl, WA_MESSAGES } from "@/lib/wa";
 import { GridVignetteBackground } from "@/components/ui/vignette-grid-background";
 import { ParticleField } from "@/components/ParticleField";
 import { usePageContent } from "@/hooks/use-page-content";
-import { EXACT_DEFAULT_TRAINING_CONTENT } from "./admin/pages/training";
+import { getPageContent } from "@/lib/supabase";
+import { EXACT_DEFAULT_TRAINING_CONTENT } from "@/lib/cms-defaults";
 import { RichHeading } from "@/components/RichHeading";
 
 export const Route = createFileRoute("/training")({
+  loader: async () => {
+    return await getPageContent("training");
+  },
   head: () => {
     const m = buildMeta({
       path: "/training",
@@ -88,7 +92,8 @@ function parseStat(
 }
 
 function TrainingPage() {
-  const cms = usePageContent("training", EXACT_DEFAULT_TRAINING_CONTENT);
+  const loaderData = Route.useLoaderData();
+  const cms = usePageContent("training", EXACT_DEFAULT_TRAINING_CONTENT, loaderData);
 
   // Dynamic Hero Stats
   const heroStatsList = useMemo(() => {

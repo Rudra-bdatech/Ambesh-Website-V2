@@ -5,11 +5,15 @@ import { buildMeta, jsonLd, breadcrumbSchema } from "@/lib/seo";
 import { BookOpen, Search, Calendar, Clock, ArrowRight, Mail } from "lucide-react";
 import { GridVignetteBackground } from "@/components/ui/vignette-grid-background";
 import { usePageContent } from "@/hooks/use-page-content";
-import { EXACT_DEFAULT_INSIGHTS_CONTENT } from "./admin/pages/insights";
+import { getPageContent } from "@/lib/supabase";
+import { EXACT_DEFAULT_INSIGHTS_CONTENT } from "@/lib/cms-defaults";
 import { RichHeading } from "@/components/RichHeading";
 import { submitLeadToGHL } from "@/lib/ghl";
 
 export const Route = createFileRoute("/insights")({
+  loader: async () => {
+    return await getPageContent("insights");
+  },
   head: () => {
     const m = buildMeta({
       path: "/insights",
@@ -47,7 +51,8 @@ interface Article {
 }
 
 function InsightsPage() {
-  const content = usePageContent("insights", EXACT_DEFAULT_INSIGHTS_CONTENT);
+  const loaderData = Route.useLoaderData();
+  const content = usePageContent("insights", EXACT_DEFAULT_INSIGHTS_CONTENT, loaderData);
 
   const hero = content.hero || EXACT_DEFAULT_INSIGHTS_CONTENT.hero;
   const articlesSec = content.articles || EXACT_DEFAULT_INSIGHTS_CONTENT.articles;

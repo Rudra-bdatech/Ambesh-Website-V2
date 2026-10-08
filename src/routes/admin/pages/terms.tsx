@@ -22,7 +22,7 @@ export const Route = createFileRoute("/admin/pages/terms")({
 });
 
 // ─── EXACT 1:1 Default content matching the live terms.tsx ───────────────────
-export const EXACT_DEFAULT_TERMS_CONTENT = {
+const EXACT_DEFAULT_TERMS_CONTENT = {
   header: {
     eyebrow: "Legal",
     title: "Terms of Use",
@@ -222,7 +222,7 @@ const sectionMeta: Record<
   },
 };
 
-export function TermsPageEditor() {
+function TermsPageEditor() {
   const [content, setContent] = useState<ContentMap>({});
   const [loading, setLoading] = useState(true);
   const [savingSection, setSavingSection] = useState<string | null>(null);
@@ -300,10 +300,17 @@ export function TermsPageEditor() {
 
       if (error) throw error;
 
-      // Realtime cross-tab sync
+      // Realtime cross-tab sync & instant cache update
+      try {
+        const cached = localStorage.getItem("cms-cache-terms");
+        const parsed = cached ? JSON.parse(cached) : {};
+        parsed[section] = sectionData;
+        localStorage.setItem("cms-cache-terms", JSON.stringify(parsed));
+      } catch (_) {}
+
       try {
         const channel = new BroadcastChannel("ambesh-cms-sync");
-        channel.postMessage({ page: "terms", section, timestamp: Date.now() });
+        channel.postMessage({ page: "terms", section, data: sectionData, timestamp: Date.now() });
         channel.close();
       } catch (bcErr) {
         console.warn("BroadcastChannel error:", bcErr);

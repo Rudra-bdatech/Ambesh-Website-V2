@@ -28,7 +28,7 @@ export const Route = createFileRoute("/admin/pages/book")({
 });
 
 // ─── EXACT 1:1 Default content matching the live book.tsx ───────────────────
-export const EXACT_DEFAULT_BOOK_CONTENT = {
+const EXACT_DEFAULT_BOOK_CONTENT = {
   hero: {
     eyebrow: "The book",
     heading: "Accelerate *With AI.*",
@@ -267,7 +267,7 @@ const sectionMeta: Record<
   },
 };
 
-export function BookPageEditor() {
+function BookPageEditor() {
   const [content, setContent] = useState<ContentMap>({});
   const [loading, setLoading] = useState(true);
   const [savingSection, setSavingSection] = useState<string | null>(null);
@@ -345,10 +345,17 @@ export function BookPageEditor() {
 
       if (error) throw error;
 
-      // Realtime cross-tab sync
+      // Realtime cross-tab sync & instant cache update
+      try {
+        const cached = localStorage.getItem("cms-cache-book");
+        const parsed = cached ? JSON.parse(cached) : {};
+        parsed[section] = sectionData;
+        localStorage.setItem("cms-cache-book", JSON.stringify(parsed));
+      } catch (_) {}
+
       try {
         const channel = new BroadcastChannel("ambesh-cms-sync");
-        channel.postMessage({ page: "book", section, timestamp: Date.now() });
+        channel.postMessage({ page: "book", section, data: sectionData, timestamp: Date.now() });
         channel.close();
       } catch (bcErr) {
         console.warn("BroadcastChannel error:", bcErr);

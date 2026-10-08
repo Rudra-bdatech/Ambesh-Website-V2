@@ -23,10 +23,14 @@ import { BeliefLogo } from "@/components/BeliefLogos";
 import { buildMeta, jsonLd, personSchema, breadcrumbSchema } from "@/lib/seo";
 import { GridVignetteBackground } from "@/components/ui/vignette-grid-background";
 import { usePageContent } from "@/hooks/use-page-content";
-import { EXACT_DEFAULT_ABOUT_CONTENT } from "./admin/pages/about";
+import { getPageContent } from "@/lib/supabase";
+import { EXACT_DEFAULT_ABOUT_CONTENT } from "@/lib/cms-defaults";
 import { RichHeading } from "@/components/RichHeading";
 
 export const Route = createFileRoute("/about")({
+  loader: async () => {
+    return await getPageContent("about");
+  },
   head: () => {
     const m = buildMeta({
       path: "/about",
@@ -55,7 +59,8 @@ export const Route = createFileRoute("/about")({
 });
 
 function AboutPage() {
-  const cms = usePageContent("about", EXACT_DEFAULT_ABOUT_CONTENT);
+  const loaderData = Route.useLoaderData();
+  const cms = usePageContent("about", EXACT_DEFAULT_ABOUT_CONTENT, loaderData);
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({

@@ -3,9 +3,13 @@ import { ShieldCheck } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { buildMeta, jsonLd, breadcrumbSchema, SITE_URL } from "@/lib/seo";
 import { usePageContent } from "@/hooks/use-page-content";
-import { EXACT_DEFAULT_PRIVACY_CONTENT } from "./admin/pages/privacy";
+import { getPageContent } from "@/lib/supabase";
+import { EXACT_DEFAULT_PRIVACY_CONTENT } from "@/lib/cms-defaults";
 
 export const Route = createFileRoute("/privacy")({
+  loader: async () => {
+    return await getPageContent("privacy");
+  },
   head: () => {
     const m = buildMeta({
       path: "/privacy",
@@ -30,7 +34,8 @@ export const Route = createFileRoute("/privacy")({
 });
 
 function PrivacyPage() {
-  const content = usePageContent("privacy", EXACT_DEFAULT_PRIVACY_CONTENT);
+  const loaderData = Route.useLoaderData();
+  const content = usePageContent("privacy", EXACT_DEFAULT_PRIVACY_CONTENT, loaderData);
 
   const header = content.header || EXACT_DEFAULT_PRIVACY_CONTENT.header;
   const intro = content.intro || EXACT_DEFAULT_PRIVACY_CONTENT.intro;

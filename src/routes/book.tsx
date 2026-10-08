@@ -8,10 +8,14 @@ import { buildMeta, jsonLd, breadcrumbSchema, SITE_URL, DEFAULT_OG_IMAGE } from 
 import { submitLeadToGHL } from "@/lib/ghl";
 import { GridVignetteBackground } from "@/components/ui/vignette-grid-background";
 import { usePageContent } from "@/hooks/use-page-content";
-import { EXACT_DEFAULT_BOOK_CONTENT } from "./admin/pages/book";
+import { getPageContent } from "@/lib/supabase";
+import { EXACT_DEFAULT_BOOK_CONTENT } from "@/lib/cms-defaults";
 import { RichHeading } from "@/components/RichHeading";
 
 export const Route = createFileRoute("/book")({
+  loader: async () => {
+    return await getPageContent("book");
+  },
   head: () => {
     const m = buildMeta({
       path: "/book",
@@ -75,7 +79,8 @@ const pressLogos = [
 ];
 
 function BookPage() {
-  const content = usePageContent("book", EXACT_DEFAULT_BOOK_CONTENT);
+  const loaderData = Route.useLoaderData();
+  const content = usePageContent("book", EXACT_DEFAULT_BOOK_CONTENT, loaderData);
 
   const hero = content.hero || EXACT_DEFAULT_BOOK_CONTENT.hero;
   const press = content.press || EXACT_DEFAULT_BOOK_CONTENT.press;

@@ -18,7 +18,8 @@ import { buildMeta, jsonLd, breadcrumbSchema, faqSchema, SITE_URL } from "@/lib/
 import { whatsappUrl, WA_MESSAGES } from "@/lib/wa";
 import { submitLeadToGHL } from "@/lib/ghl";
 import { usePageContent } from "@/hooks/use-page-content";
-import { EXACT_DEFAULT_CONTACT_CONTENT } from "./admin/pages/contact";
+import { getPageContent } from "@/lib/supabase";
+import { EXACT_DEFAULT_CONTACT_CONTENT } from "@/lib/cms-defaults";
 import { RichHeading } from "@/components/RichHeading";
 
 export const faqs = [
@@ -41,6 +42,9 @@ export const faqs = [
 ];
 
 export const Route = createFileRoute("/contact")({
+  loader: async () => {
+    return await getPageContent("contact");
+  },
   head: () => {
     const m = buildMeta({
       path: "/contact",
@@ -103,7 +107,8 @@ function readQuery() {
 }
 
 function ContactPage() {
-  const cms = usePageContent("contact", EXACT_DEFAULT_CONTACT_CONTENT);
+  const loaderData = Route.useLoaderData();
+  const cms = usePageContent("contact", EXACT_DEFAULT_CONTACT_CONTENT, loaderData);
   const [submitting, setSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);

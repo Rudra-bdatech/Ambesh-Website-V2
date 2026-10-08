@@ -22,7 +22,7 @@ export const Route = createFileRoute("/admin/pages/privacy")({
 });
 
 // ─── EXACT 1:1 Default content matching the live privacy.tsx ───────────────────
-export const EXACT_DEFAULT_PRIVACY_CONTENT = {
+const EXACT_DEFAULT_PRIVACY_CONTENT = {
   header: {
     eyebrow: "Legal",
     title: "Privacy Policy",
@@ -218,7 +218,7 @@ const sectionMeta: Record<
   },
 };
 
-export function PrivacyPageEditor() {
+function PrivacyPageEditor() {
   const [content, setContent] = useState<ContentMap>({});
   const [loading, setLoading] = useState(true);
   const [savingSection, setSavingSection] = useState<string | null>(null);
@@ -296,10 +296,17 @@ export function PrivacyPageEditor() {
 
       if (error) throw error;
 
-      // Realtime cross-tab sync
+      // Realtime cross-tab sync & instant cache update
+      try {
+        const cached = localStorage.getItem("cms-cache-privacy");
+        const parsed = cached ? JSON.parse(cached) : {};
+        parsed[section] = sectionData;
+        localStorage.setItem("cms-cache-privacy", JSON.stringify(parsed));
+      } catch (_) {}
+
       try {
         const channel = new BroadcastChannel("ambesh-cms-sync");
-        channel.postMessage({ page: "privacy", section, timestamp: Date.now() });
+        channel.postMessage({ page: "privacy", section, data: sectionData, timestamp: Date.now() });
         channel.close();
       } catch (bcErr) {
         console.warn("BroadcastChannel error:", bcErr);
