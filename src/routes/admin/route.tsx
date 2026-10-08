@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useNavigate, Link, useLocation } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Lenis from "lenis";
 import {
   LayoutDashboard,
   Home,
@@ -45,8 +46,50 @@ function AdminLayout() {
   const { isAuthenticated, loading, logout, session } = useAdminAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const mainRef = useRef<HTMLElement | null>(null);
 
   const isLoginRoute = location.pathname === "/admin/login";
+
+  // Initialize Lenis smooth scroll for admin container on desktop
+  useEffect(() => {
+    if (typeof window === "undefined" || !mainRef.current || isLoginRoute) return;
+
+    const isMobileDevice =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      window.matchMedia("(max-width: 1023px)").matches;
+    if (isMobileDevice) return;
+
+    const lenis = new Lenis({
+      wrapper: mainRef.current,
+      content: (mainRef.current.firstElementChild as HTMLElement) || mainRef.current,
+      duration: 0.9,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: "vertical",
+      gestureOrientation: "vertical",
+      smoothWheel: true,
+      wheelMultiplier: 1.15,
+    });
+
+    let rafId: number;
+    function raf(time: number) {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    }
+
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
+  }, [isLoginRoute]);
+
+  // Reset scroll on admin page navigation
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTop = 0;
+    }
+  }, [location.pathname]);
 
   // Redirect to login if not authenticated and trying to access admin dashboard
   useEffect(() => {
@@ -224,7 +267,7 @@ function AdminLayout() {
         </header>
 
         {/* Page outlet */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main ref={mainRef} className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>
